@@ -1,21 +1,66 @@
-```txt
-npm install
-npm run dev
-```
+# NomaLoft (ノマロフト) ☕🥐
 
-```txt
-npm run deploy
-```
+PCワーカー・ノマドワーカーのための、**現在地から近いカフェ＆コワーキングスペースを地図上に可愛く可視化するWebアプリケーション**です。  
+焼きたてオーツラテのような**薄いベージュトーン（Warm Oat Milk & Espresso）**と、Awwwards / The Webby Awards / FWA 水準を目指した遊び心あふれるマイクロインタラクション・インフォグラフィックアニメーションを搭載しています。
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+---
 
-```txt
-npm run cf-typegen
-```
+## 🌐 公開プレビューURL
+- **Sandbox Live Preview**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai`
 
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
+---
 
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+## ✨ 実装済みの機能・UI/UXアニメーション一覧
+
+### 1. マップ可視化 ＆ 現在地連動機能
+- **カフェカラー・カスタムLeafletマップ**: セピア＆オーツミルク調にカスタムフィルタリングされた地図上に、実測Wi-Fi速度と空席数がひと目でわかる可愛いピル型ピン（`☕ ⚡340M · 空14`）を描画。
+- **現在地GPSレーダー & 徒歩8分圏リング**: 「現在地から探す」ボタンでGPS座標を取得し近い順に自動ソート（位置情報オフ環境でも渋谷・代官山デモ座標へスムーズにフォールバック）。徒歩8分圏（約650m）の点線リング表示切替も可能。
+- **街ジャンプ＆条件フィルター**: 渋谷・代官山・表参道・中目黒・下北沢へのワンタップワープ、「🔌電源90%以上」「⚡爆速300Mbps+」「🎧Web会議OK」「🤫もくもく静寂」「🛋️今すぐ空いてる」の複合絞り込みに対応。
+
+### 2. ご指定の全8種 UI/UX ＆ モーションデザイン要件
+1. **Kinetic Typography（キネティック・タイポグラフィ）**:
+   - ヒーロー見出しのキーワード（「爆速Wi-Fiの」「全席コンセントの」「焼きたて珈琲香る」等）が1文字ずつバウンス回転しながら切り替わる文字スタッガーアニメーションと、ホバーで波打つウェーブタイポグラフィを実装。
+2. **UI/UX Micro-Animations & 遊び心ギミック**:
+   - ネオ・カフェ・タクタイルボタン（押し込み感のある立体シャドウ）、湯気が揺れるカップマスコットSVG、デスクトップ向けマグネット・ラテカーソル、絵文字コンフェッティ（紙吹雪）、Web Audio APIによる「カフェ環境音シンセ（優しいアンビエントノイズ）」、25分「珈琲ポモドーロタイマー」、「今日のノマド運勢・ラテ占いステッカー」を搭載。
+3. **Infographic Animation（インフォグラフィック・アニメーション）**:
+   - ヒーロー右側のSVG円形ラジアルゲージ3種（平均Wi-Fi速度・電源席カバー率・合計空席数）のカウントアップ＆ストロークアニメーション。
+   - ページ下部の時間帯別ゴールデンタイム棒グラフ＆ワーカー過ごし方比率プログレスバー。
+   - ボトムシート内の4項目快適度メーター＆時間帯別空席チャートの段階的アニメーション。
+4. **Pull to Refresh（プルトゥリフレッシュ）**:
+   - スポット一覧リストを上端から下に引っ張ると（タッチ＆マウスドラッグ両対応）、コーヒードリップカップが回転し、最新の空席数・実測Wi-Fi速度を再スキャンして更新。
+5. **Skeleton Screen（スケルトンスクリーン）**:
+   - 初回ロード時やフィルター・更新時に、ラテカラーのシマー（Shimmer）が滑らかに流れる専用スケルトンカードを表示。
+6. **Toast（トースト通知）**:
+   - スプリングアニメーション付きの可愛いトースト通知スタック。残り時間プログレスバーや、お気に入り解除時の「元に戻す（Undo）」アクションボタンに対応。
+7. **Bottom Sheet（ボトムシート）**:
+   - カードやマップピンをタップすると下からスライドアップする詳細ボトムシート。ハンドルの上下ドラッグで「全画面拡大 / コンパクト切替 / 下スワイプで閉じる」が可能。
+8. **Swipe Action（スワイプアクション）**:
+   - スポットカードを**右スワイプ**でお気に入り保存切替（ハート紙吹雪つき）、**左スワイプ**でワンタップ・チェックイン（ビーンズ+15粒獲得）＆詳細シート表示。
+9. **Auto Complete（オートコンプリート検索）**:
+   - 検索バーフォーカス・入力時にリアルタイムで店舗候補とこだわり条件タグをサジェスト。一致文字のハイライト表示、キーボードの `↑` `↓` `Enter` `Esc` 操作、`/` キーでの即座フォーカスに対応。
+
+---
+
+## 🔌 API エンドポイント仕様 (Hono Edge Routes)
+
+| メソッド | パス | パラメータ例 | 説明 |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/` | - | NomaLoft メインWebアプリケーション画面 |
+| `GET` | `/api/spots` | `lat`, `lng`, `category`, `filter`, `q`, `sort`, `jitter` | 現在地からの距離（Haversine公式）・徒歩分数・ノマド快適スコアを計算し、条件に合うスポット一覧と集計サマリーを返却 |
+| `GET` | `/api/autocomplete` | `q` | 店舗名・駅名・タグ・エリアからのリアルタイム検索サジェスト候補を返却 |
+| `POST` | `/api/checkin` | `{ "spotId": "spot-oat-loft" }` | スポットへのチェックイン処理と獲得ビーンズ数を返却 |
+
+---
+
+## 🗂️ データアーキテクチャ・技術スタック
+- **Backend / Edge Runtime**: Hono v4 + TypeScript on Cloudflare Pages / Workers
+- **Frontend**: Semantic HTML5 + Tailwind CSS + Vanilla JS (ES6+) + Leaflet.js + Web Audio API
+- **Visual Assets**: オリジナル制作のカフェ空間ベクターイラスト (`src/data/illustrations.ts`) ＋ CC0/Public Domain ライセンス確認済みコーヒー写真
+- **Process Management**: PM2 + Wrangler Pages Dev (`0.0.0.0:3000`)
+
+---
+
+## 🚀 今後の拡張ステップ案
+1. **Cloudflare D1 データベース連携**: ユーザー投稿レビュー・電源写真の永続化およびリアルタイム混雑投票の共有機能。
+2. **お気に入りリストの共有URL発行**: 友達やチームメンバーに「今日の作業カフェ候補3選」をシェアできる機能。
+3. **本番デプロイ**: Cloudflare Pages または Genspark Hosted Deploy へのワンクリック公開。
