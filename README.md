@@ -5,8 +5,8 @@
 ---
 
 ## 公開プレビューURL
-- **Sandbox Live Preview（マップ本体）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai`
-- **Brand & Logo Lab（アイコン＆文字ロゴ厳選12案プレゼンシート）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai/logos`
+- **Sandbox Live Preview（マップ本体・CT-01初期適用中）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai`
+- **Cat Latte × Nomad Tech Logo Lab（ねこラテ×ノマドTech 厳選6案＋比較シート）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai/logos`
 
 ---
 

@@ -12,20 +12,20 @@
   // =========================================================================
 
   /**
-   * Cup Mascot Character SVG ("コーヒー好きの小さな動物たちが営む街のカフェ" — Latte-ear Cup)
+   * Cup Mascot Character SVG ("ねこラテアート × ノマドTech" — Pointy Cat-Ear Latte Cup with Plug Handle & Wi-Fi Steam)
    * @param {'normal'|'happy'|'loading'|'sad'} mood
    */
   function getMascotSVG(mood = 'normal') {
     const steamMarkup =
       mood === 'loading'
-        ? `<path class="sway-steam" d="M14 9 C13 6 16 5 15 2.2" stroke="#E67645" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-           <path class="sway-steam-delay" d="M21 9.5 C20 6.5 23 5.5 22 2.8" stroke="#D8A47F" stroke-width="1.8" stroke-linecap="round" fill="none"/>`
+        ? `<path class="sway-steam" d="M12.5 8.2 A6.8 6.8 0 0 1 23.5 8.2" stroke="#529973" stroke-width="1.9" stroke-linecap="round" fill="none"/>
+           <path class="sway-steam-delay" d="M14.8 10.6 A4.2 4.2 0 0 1 21.2 10.6" stroke="#E67645" stroke-width="1.9" stroke-linecap="round" fill="none"/>`
         : mood === 'sad'
         ? `<path d="M17.5 9.5 C17.5 7.8 18.5 7.2 18.2 6" stroke="#C5B4A5" stroke-width="1.5" stroke-linecap="round" fill="none"/>`
-        : `<path class="sway-steam" d="M15 8.5 C14.2 6.2 16.5 5.2 15.8 3" stroke="#E67645" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-           <path class="sway-steam-delay" d="M20.8 9 C20 6.8 22.2 5.8 21.5 3.6" stroke="#D8A47F" stroke-width="1.6" stroke-linecap="round" fill="none"/>`;
+        : `<path class="sway-steam" d="M13.5 8.6 A6 6 0 0 1 22.5 8.6" stroke="#529973" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+           <circle cx="18" cy="10.4" r="1.1" fill="#E67645"/>`;
 
-    // Simple dot eyes & tiny mouth per expression
+    // Simple dot eyes & tiny cat mouth per expression
     let faceMarkup = '';
     if (mood === 'happy') {
       faceMarkup = `
@@ -33,7 +33,7 @@
         <path d="M20.4 22.2 Q21.8 20.3 23.2 22.2" stroke="#36261C" stroke-width="1.7" stroke-linecap="round" fill="none"/>
         <ellipse cx="11.5" cy="24.2" rx="1.7" ry="1" fill="#F4A4B8" opacity="0.75"/>
         <ellipse cx="24.5" cy="24.2" rx="1.7" ry="1" fill="#F4A4B8" opacity="0.75"/>
-        <path d="M16.3 24.2 Q18 26.2 19.7 24.2" stroke="#36261C" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+        <path d="M15.8 24.2 Q16.9 25.6 18 24.4 Q19.1 25.6 20.2 24.2" stroke="#36261C" stroke-width="1.5" stroke-linecap="round" fill="none"/>
       `;
     } else if (mood === 'sad') {
       faceMarkup = `
@@ -49,20 +49,22 @@
         <circle cx="21.8" cy="22.2" r="1.45" fill="#36261C"/>
         <ellipse cx="11.8" cy="24" rx="1.5" ry="0.95" fill="#F4A4B8" opacity="0.6"/>
         <ellipse cx="24.2" cy="24" rx="1.5" ry="0.95" fill="#F4A4B8" opacity="0.6"/>
-        <path d="M16.8 24.2 Q18 25.4 19.2 24.2" stroke="#36261C" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M16.1 24.2 Q17.1 25.3 18 24.3 Q18.9 25.3 19.9 24.2" stroke="#36261C" stroke-width="1.4" stroke-linecap="round" fill="none"/>
       `;
     }
 
     return `
       <svg viewBox="0 0 38 36" class="w-full h-full overflow-visible">
         ${steamMarkup}
-        <!-- Subtle Bear-Latte Foam Ears -->
-        <circle cx="12" cy="13.2" r="3" fill="#F5DEC4" stroke="#36261C" stroke-width="1.6"/>
-        <circle cx="24" cy="13.2" r="3" fill="#F5DEC4" stroke="#36261C" stroke-width="1.6"/>
-        <!-- Cup Body -->
-        <path d="M8 14.5 H28 V23.5 C28 28.8 23.5 32.5 18 32.5 C12.5 32.5 8 28.8 8 23.5 Z" fill="#FFFFFF" stroke="#36261C" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="M28 17 H30.8 C32.9 17 34.2 18.5 34.2 20.4 C34.2 22.3 32.9 23.8 30.8 23.8 H28" fill="none" stroke="#36261C" stroke-width="1.8" stroke-linecap="round"/>
-        <ellipse cx="18" cy="14.6" rx="9.6" ry="2.2" fill="#E8C6A0" stroke="#36261C" stroke-width="1.4"/>
+        <!-- Pointy Cat-Latte Foam Ears -->
+        <polygon points="10.2,15 12,10.2 15.6,13.6" fill="#FFFDF9" stroke="#36261C" stroke-width="1.6" stroke-linejoin="round"/>
+        <polygon points="25.8,15 24,10.2 20.4,13.6" fill="#FFFDF9" stroke="#36261C" stroke-width="1.6" stroke-linejoin="round"/>
+        <!-- Cup Body + Plug-Tipped Handle -->
+        <path d="M8 15 H28 V23.5 C28 28.8 23.5 32.5 18 32.5 C12.5 32.5 8 28.8 8 23.5 Z" fill="#FFFFFF" stroke="#36261C" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M28 17.5 H31 C32.8 17.5 34 18.8 34 20.5 C34 22.2 32.8 23.5 31 23.5 H28" fill="none" stroke="#36261C" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="34.2" y1="19.1" x2="36.4" y2="19.1" stroke="#E67645" stroke-width="1.7" stroke-linecap="round"/>
+        <line x1="34.2" y1="21.9" x2="36.4" y2="21.9" stroke="#E67645" stroke-width="1.7" stroke-linecap="round"/>
+        <ellipse cx="18" cy="15" rx="9.6" ry="2" fill="#D58454" stroke="#36261C" stroke-width="1.3"/>
         ${faceMarkup}
       </svg>
     `;
@@ -183,9 +185,11 @@
     return m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${m}m`;
   }
 
+  const LOGO_STORAGE_KEY = window.NOMALOFT_LOGO_STORAGE_KEY || 'nomaloft_selected_logo_v2';
+
   function getActiveBrandLogo() {
     const list = window.NOMALOFT_LOGOS || [];
-    const savedId = localStorage.getItem('nomaloft_selected_logo');
+    const savedId = localStorage.getItem(LOGO_STORAGE_KEY);
     return list.find((l) => l.id === savedId) || list[0] || null;
   }
 
@@ -231,16 +235,18 @@
       dom.kineticConcept.innerHTML = `<span class="k-word-in">${conceptPhrases[conceptIdx]}</span>`;
     }, 3800);
 
-    // Click icon to quickly cycle through the 12 logo proposals live in the header!
+    // Click icon to quickly cycle through the 6 Cat-Latte × Nomad Tech proposals live in the header!
     document.getElementById('header-mascot-btn')?.addEventListener('click', () => {
-      const list = window.NOMALOFT_LOGOS || [];
-      if (list.length > 0) {
+      const allLogos = window.NOMALOFT_LOGOS || [];
+      const catTechLogos = allLogos.filter((l) => l.series === 'cat-tech');
+      const cycleList = catTechLogos.length > 0 ? catTechLogos : allLogos;
+      if (cycleList.length > 0) {
         const cur = getActiveBrandLogo();
-        const nextIdx = (list.findIndex((l) => l.id === cur?.id) + 1) % list.length;
-        const nextLogo = list[nextIdx];
-        localStorage.setItem('nomaloft_selected_logo', nextLogo.id);
+        const curIdx = cycleList.findIndex((l) => l.id === cur?.id);
+        const nextLogo = cycleList[(curIdx + 1) % cycleList.length];
+        localStorage.setItem(LOGO_STORAGE_KEY, nextLogo.id);
         applySelectedBrandToHeader();
-        showToast(`ロゴ案 ${nextLogo.num}「${nextLogo.title}」に着せ替えたよ`);
+        showToast(`${nextLogo.num}「${nextLogo.title}」に着せ替えたよ`);
       } else {
         setHeaderMascot('happy');
         setTimeout(() => setHeaderMascot('normal'), 2200);

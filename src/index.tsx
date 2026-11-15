@@ -177,8 +177,8 @@ app.get('/', (c) => {
               <span id="header-wordmark-slot" class="h-7 inline-flex items-center">
                 <span class="font-display font-bold text-xl tracking-tight text-espresso">NomaLoft</span>
               </span>
-              <a href="/logos" class="soft-press px-2 py-0.5 rounded-full bg-[#FFF0E6] hover:bg-cafeorange hover:text-white border border-[#F2CBB6] text-cafeorange text-[10.5px] font-bold whitespace-nowrap transition-colors" title="アイコン＆文字ロゴ12案を比較・着せ替え">
-                ロゴ12案
+              <a href="/logos" class="soft-press px-2 py-0.5 rounded-full bg-[#FFF0E6] hover:bg-cafeorange hover:text-white border border-[#F2CBB6] text-cafeorange text-[10.5px] font-bold whitespace-nowrap transition-colors" title="ねこラテ×ノマドTech ロゴ6案を比較・着せ替え">
+                ねこ×Techロゴ
               </a>
             </div>
             <p class="text-xs font-bold text-latte truncate mt-0.5">
@@ -428,7 +428,7 @@ app.get('/logos', (c) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NomaLoft — アイコン＆文字ロゴ 厳選12案プレゼンシート</title>
+  <title>NomaLoft — ねこラテアート × ノマドTech ロゴ厳選6案</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -442,7 +442,7 @@ app.get('/logos', (c) => {
   <header class="sticky top-0 z-40 bg-[#FFFDF9]/92 backdrop-blur-md border-b border-[#E8DDD0] shadow-[0_6px_20px_rgba(102,71,48,0.06)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       <div class="flex items-center gap-3 min-w-0">
-        <span class="px-3 py-1 rounded-full bg-[#E67645] text-white text-xs font-bold whitespace-nowrap">LOGO LAB · 全12案</span>
+        <span class="px-3 py-1 rounded-full bg-[#E67645] text-white text-xs font-bold whitespace-nowrap">CAT LATTE × NOMAD TECH</span>
         <div class="hidden sm:flex items-center gap-2 text-xs font-bold text-[#6E5849] truncate">
           <span>現在選択中のヘッダープレビュー:</span>
           <div id="live-header-preview" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF7EE] border border-[#E8DDD0]"></div>
@@ -461,24 +461,25 @@ app.get('/logos', (c) => {
     <div class="bg-gradient-to-b from-white to-[#FFF9F1] border border-[#E8DDD0] rounded-[28px] p-6 sm:p-8 shadow-[0_10px_28px_-6px_rgba(102,71,48,0.08)]">
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div class="space-y-2 max-w-3xl">
-          <p class="text-xs font-bold text-[#E67645] tracking-wider">BRAND IDENTITY PROPOSALS</p>
+          <p class="text-xs font-bold text-[#529973] tracking-wider">CAT LATTE ART × NOMAD WORKER EDITION</p>
           <h1 class="text-2xl sm:text-3xl font-black text-[#36261C] leading-snug">
-            「NomaLoft」アイコン ＋ 文字ロゴ 最適12案
+            「ねこラテアート × ノマド（若干のTech）」進化版 6案
           </h1>
           <p class="text-xs sm:text-sm text-[#6E5849] leading-relaxed">
-            「コーヒー好きの小さな動物たちが営む、あったかい街の電源・Wi-Fiカフェ地図」の世界観に合わせ、<strong>アプリアイコン単体での強さ・16px極小ファビコンでの判別性・文字ロゴ（Wordmark）との一体感</strong>を軸に12通りのアプローチを設計しました。気になる案の<strong>「このロゴを試着する」</strong>を押すと、実際のマップ画面のヘッダーに即時反映されます。
+            お選びいただいた<strong>「ねこラテアート」</strong>のあたたかい癒やしをベースに、冷たいサイバー感にならない<strong>「ほんのり知的なノマド・Tech要素（コンセント持ち手・Wi-Fi電波・PCキーボード・コード記号ひげ・丸メガネ＆充電・GPSピン皿）」</strong>を掛け合わせた6つの最適解です。文字ロゴ側にも端末カーソル<code>_</code>やキーキャップなどのTechアクセントを織り込んでいます。
           </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <button type="button" data-filter-logo="all" class="logo-filter-btn tab-pill is-selected px-4 py-2 text-xs font-bold">すべて表示 (12)</button>
+          <button type="button" data-filter-logo="cat-tech" class="logo-filter-btn tab-pill is-selected px-4 py-2 text-xs font-bold">ねこラテ×Tech 特集 (6)</button>
           <button type="button" data-filter-logo="rec" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">特におすすめ本命 (3)</button>
+          <button type="button" data-filter-logo="all" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">過去原案と比較 (10)</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 12 Logo Proposal Cards Grid -->
+  <!-- Logo Proposal Cards Grid -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6">
     <div id="logo-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
   </main>
@@ -486,11 +487,12 @@ app.get('/logos', (c) => {
   <script src="/static/logos.js"></script>
   <script>
     (function() {
+      const STORAGE_KEY = window.NOMALOFT_LOGO_STORAGE_KEY || 'nomaloft_selected_logo_v2';
       const logos = window.NOMALOFT_LOGOS || [];
       const grid = document.getElementById('logo-cards-grid');
       const livePreview = document.getElementById('live-header-preview');
-      let selectedId = localStorage.getItem('nomaloft_selected_logo') || logos[0]?.id;
-      let filterMode = 'all';
+      let selectedId = localStorage.getItem(STORAGE_KEY) || logos[0]?.id;
+      let filterMode = 'cat-tech';
 
       function updateFaviconFromSvg(svgStr) {
         const uri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgStr.trim());
@@ -508,7 +510,12 @@ app.get('/logos', (c) => {
       }
 
       function renderGrid() {
-        const list = filterMode === 'rec' ? logos.filter(l => l.recommended) : logos;
+        const list =
+          filterMode === 'cat-tech'
+            ? logos.filter(l => l.series === 'cat-tech')
+            : filterMode === 'rec'
+            ? logos.filter(l => l.recommended)
+            : logos;
         grid.innerHTML = list.map(item => {
           const isCurrent = item.id === selectedId;
           return \`
@@ -582,7 +589,7 @@ app.get('/logos', (c) => {
         grid.querySelectorAll('[data-select-logo]').forEach(btn => {
           btn.addEventListener('click', () => {
             selectedId = btn.getAttribute('data-select-logo');
-            localStorage.setItem('nomaloft_selected_logo', selectedId);
+            localStorage.setItem(STORAGE_KEY, selectedId);
             syncHeaderPreview();
             renderGrid();
           });
