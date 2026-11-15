@@ -183,8 +183,35 @@
     return m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${m}m`;
   }
 
+  function getActiveBrandLogo() {
+    const list = window.NOMALOFT_LOGOS || [];
+    const savedId = localStorage.getItem('nomaloft_selected_logo');
+    return list.find((l) => l.id === savedId) || list[0] || null;
+  }
+
+  function applySelectedBrandToHeader() {
+    const logo = getActiveBrandLogo();
+    if (!logo) return;
+    const wmSlot = document.getElementById('header-wordmark-slot');
+    if (wmSlot) wmSlot.innerHTML = logo.wordmarkSvg;
+    if (dom.headerMascotSvg) dom.headerMascotSvg.innerHTML = logo.iconSvg;
+
+    const iconLink = document.querySelector("link[rel~='icon']");
+    if (iconLink) {
+      iconLink.href = 'data:image/svg+xml;utf8,' + encodeURIComponent(logo.iconSvg.trim());
+    }
+  }
+
   function setHeaderMascot(mood = 'normal') {
-    if (dom.headerMascotSvg) dom.headerMascotSvg.innerHTML = getMascotSVG(mood);
+    if (!dom.headerMascotSvg) return;
+    if (mood === 'normal') {
+      const logo = getActiveBrandLogo();
+      if (logo) {
+        dom.headerMascotSvg.innerHTML = logo.iconSvg;
+        return;
+      }
+    }
+    dom.headerMascotSvg.innerHTML = getMascotSVG(mood);
   }
 
   // =========================================================================
@@ -194,7 +221,7 @@
   let conceptIdx = 0;
 
   function initHeaderAnimations() {
-    setHeaderMascot('normal');
+    applySelectedBrandToHeader();
     if (dom.loadingMascotSlot) dom.loadingMascotSlot.innerHTML = getMascotSVG('loading');
     if (dom.ptrMascotSlot) dom.ptrMascotSlot.innerHTML = getMascotSVG('loading');
 
@@ -204,10 +231,20 @@
       dom.kineticConcept.innerHTML = `<span class="k-word-in">${conceptPhrases[conceptIdx]}</span>`;
     }, 3800);
 
+    // Click icon to quickly cycle through the 12 logo proposals live in the header!
     document.getElementById('header-mascot-btn')?.addEventListener('click', () => {
-      setHeaderMascot('happy');
-      showToast('いつもおつかれさま。ゆっくり作業できるカフェが見つかりますように');
-      setTimeout(() => setHeaderMascot('normal'), 2200);
+      const list = window.NOMALOFT_LOGOS || [];
+      if (list.length > 0) {
+        const cur = getActiveBrandLogo();
+        const nextIdx = (list.findIndex((l) => l.id === cur?.id) + 1) % list.length;
+        const nextLogo = list[nextIdx];
+        localStorage.setItem('nomaloft_selected_logo', nextLogo.id);
+        applySelectedBrandToHeader();
+        showToast(`ロゴ案 ${nextLogo.num}「${nextLogo.title}」に着せ替えたよ`);
+      } else {
+        setHeaderMascot('happy');
+        setTimeout(() => setHeaderMascot('normal'), 2200);
+      }
     });
   }
 

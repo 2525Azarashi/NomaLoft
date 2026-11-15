@@ -5,7 +5,8 @@
 ---
 
 ## 公開プレビューURL
-- **Sandbox Live Preview**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai`
+- **Sandbox Live Preview（マップ本体）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai`
+- **Brand & Logo Lab（アイコン＆文字ロゴ厳選12案プレゼンシート）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai/logos`
 
 ---
 

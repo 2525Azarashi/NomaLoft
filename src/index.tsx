@@ -109,7 +109,7 @@ app.get('/', (c) => {
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Fredoka:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Quicksand:wght@700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -174,8 +174,12 @@ app.get('/', (c) => {
 
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="font-display font-bold text-xl tracking-tight text-espresso">NomaLoft</span>
-              <span class="px-2.5 py-0.5 rounded-full bg-butter-light text-butter-ink text-[11px] font-bold whitespace-nowrap">関西カフェ地図</span>
+              <span id="header-wordmark-slot" class="h-7 inline-flex items-center">
+                <span class="font-display font-bold text-xl tracking-tight text-espresso">NomaLoft</span>
+              </span>
+              <a href="/logos" class="soft-press px-2 py-0.5 rounded-full bg-[#FFF0E6] hover:bg-cafeorange hover:text-white border border-[#F2CBB6] text-cafeorange text-[10.5px] font-bold whitespace-nowrap transition-colors" title="アイコン＆文字ロゴ12案を比較・着せ替え">
+                ロゴ12案
+              </a>
             </div>
             <p class="text-xs font-bold text-latte truncate mt-0.5">
               <span id="kinetic-concept" class="text-cafeorange font-black">全席電源デスク</span>
@@ -408,8 +412,195 @@ app.get('/', (c) => {
   <!-- Floating Toast Stack -->
   <aside id="toast-stack" aria-live="polite" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none w-[90vw] max-w-sm"></aside>
 
-  <!-- Main Client Script -->
+  <!-- Shared Brand Logos & Main Client Script -->
+  <script src="/static/logos.js"></script>
   <script src="/static/app.js"></script>
+</body>
+</html>`)
+})
+
+// =========================================================================
+// GET /logos — Interactive 12-Proposal Brand Icon & Wordmark Showcase Sheet
+// =========================================================================
+app.get('/logos', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NomaLoft — アイコン＆文字ロゴ 厳選12案プレゼンシート</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Fredoka:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Quicksand:wght@700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body class="min-h-screen bg-[#F8F1E7] text-[#36261C] font-['Zen_Maru_Gothic',sans-serif] antialiased pb-20">
+
+  <!-- Sticky Header with Live Preview Bar -->
+  <header class="sticky top-0 z-40 bg-[#FFFDF9]/92 backdrop-blur-md border-b border-[#E8DDD0] shadow-[0_6px_20px_rgba(102,71,48,0.06)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <span class="px-3 py-1 rounded-full bg-[#E67645] text-white text-xs font-bold whitespace-nowrap">LOGO LAB · 全12案</span>
+        <div class="hidden sm:flex items-center gap-2 text-xs font-bold text-[#6E5849] truncate">
+          <span>現在選択中のヘッダープレビュー:</span>
+          <div id="live-header-preview" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFF7EE] border border-[#E8DDD0]"></div>
+        </div>
+      </div>
+
+      <a href="/" class="soft-press px-4 py-2 rounded-full bg-[#36261C] hover:bg-[#E67645] text-white text-xs font-bold whitespace-nowrap inline-flex items-center gap-1.5 shadow-sm transition-colors">
+        <span>選択したロゴで地図アプリを開く</span>
+        <span>→</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Intro & Filter -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+    <div class="bg-gradient-to-b from-white to-[#FFF9F1] border border-[#E8DDD0] rounded-[28px] p-6 sm:p-8 shadow-[0_10px_28px_-6px_rgba(102,71,48,0.08)]">
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+        <div class="space-y-2 max-w-3xl">
+          <p class="text-xs font-bold text-[#E67645] tracking-wider">BRAND IDENTITY PROPOSALS</p>
+          <h1 class="text-2xl sm:text-3xl font-black text-[#36261C] leading-snug">
+            「NomaLoft」アイコン ＋ 文字ロゴ 最適12案
+          </h1>
+          <p class="text-xs sm:text-sm text-[#6E5849] leading-relaxed">
+            「コーヒー好きの小さな動物たちが営む、あったかい街の電源・Wi-Fiカフェ地図」の世界観に合わせ、<strong>アプリアイコン単体での強さ・16px極小ファビコンでの判別性・文字ロゴ（Wordmark）との一体感</strong>を軸に12通りのアプローチを設計しました。気になる案の<strong>「このロゴを試着する」</strong>を押すと、実際のマップ画面のヘッダーに即時反映されます。
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button type="button" data-filter-logo="all" class="logo-filter-btn tab-pill is-selected px-4 py-2 text-xs font-bold">すべて表示 (12)</button>
+          <button type="button" data-filter-logo="rec" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">特におすすめ本命 (3)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 Logo Proposal Cards Grid -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div id="logo-cards-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+  </main>
+
+  <script src="/static/logos.js"></script>
+  <script>
+    (function() {
+      const logos = window.NOMALOFT_LOGOS || [];
+      const grid = document.getElementById('logo-cards-grid');
+      const livePreview = document.getElementById('live-header-preview');
+      let selectedId = localStorage.getItem('nomaloft_selected_logo') || logos[0]?.id;
+      let filterMode = 'all';
+
+      function updateFaviconFromSvg(svgStr) {
+        const uri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgStr.trim());
+        let link = document.querySelector("link[rel~='icon']");
+        if (link) link.href = uri;
+      }
+
+      function syncHeaderPreview() {
+        const current = logos.find(l => l.id === selectedId) || logos[0];
+        if (!current || !livePreview) return;
+        livePreview.innerHTML =
+          '<span class="w-7 h-7 inline-block shrink-0">' + current.iconSvg + '</span>' +
+          '<span class="h-6 inline-flex items-center">' + current.wordmarkSvg + '</span>';
+        updateFaviconFromSvg(current.iconSvg);
+      }
+
+      function renderGrid() {
+        const list = filterMode === 'rec' ? logos.filter(l => l.recommended) : logos;
+        grid.innerHTML = list.map(item => {
+          const isCurrent = item.id === selectedId;
+          return \`
+            <article class="rounded-[26px] bg-gradient-to-b from-white to-[#FFF9F1] border \${isCurrent ? 'border-2 border-[#E67645] shadow-[0_14px_34px_-6px_rgba(230,118,69,0.22)]' : 'border-[#E8DDD0] shadow-[0_8px_24px_-6px_rgba(102,71,48,0.08)]'} p-5 flex flex-col justify-between gap-4 transition-all">
+              <div class="space-y-3.5">
+                <!-- Top Number & Badge -->
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#F8F1E7] text-[#6E5849]">案 \${item.num}</span>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full \${item.recommended ? 'bg-[#FFF0E6] text-[#C45322]' : 'bg-[#E0F3E8] text-[#2F6F4E]'}">\${item.badge}</span>
+                  </div>
+                  \${isCurrent ? '<span class="text-[11px] font-black text-[#E67645]">● 適用中</span>' : ''}
+                </div>
+
+                <!-- [STAGE A] Large Horizontal Lockup (Cream Cafe Surface) -->
+                <div class="rounded-[20px] bg-[#FAF4EC] border border-[#EFE4D6] px-5 py-6 flex items-center justify-center gap-3.5 min-h-[116px]">
+                  <div class="w-14 h-14 shrink-0 drop-shadow-sm">\${item.iconSvg}</div>
+                  <div class="h-10 flex items-center">\${item.wordmarkSvg}</div>
+                </div>
+
+                <!-- [STAGE B] Multi-Context Size & Dark Test Strip -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                  <!-- App Icon 56px -->
+                  <div class="rounded-2xl bg-white border border-[#EFE5D8] p-2.5 flex flex-col items-center justify-center gap-1">
+                    <div class="w-12 h-12 rounded-[14px] overflow-hidden shadow-sm">\${item.iconSvg}</div>
+                    <span class="text-[10px] font-bold text-[#9A8475]">アプリアイコン</span>
+                  </div>
+
+                  <!-- Tiny 22px Favicon Check -->
+                  <div class="rounded-2xl bg-white border border-[#EFE5D8] p-2.5 flex flex-col items-center justify-center gap-2">
+                    <div class="w-6 h-6 rounded-[6px] overflow-hidden shadow-sm">\${item.iconSvg}</div>
+                    <span class="text-[10px] font-bold text-[#9A8475]">24px極小表示</span>
+                  </div>
+
+                  <!-- Dark Espresso Badge Check -->
+                  <div class="rounded-2xl bg-[#36261C] p-2.5 flex flex-col items-center justify-center gap-1">
+                    <div class="w-11 h-11 rounded-[12px] overflow-hidden">\${item.iconSvg}</div>
+                    <span class="text-[10px] font-bold text-[#E8DDD0]">濃色背景</span>
+                  </div>
+                </div>
+
+                <!-- Concept Title & Description -->
+                <div>
+                  <h2 class="text-[15px] font-black text-[#36261C]">\${item.title}</h2>
+                  <p class="text-xs text-[#6E5849] leading-relaxed mt-1">\${item.concept}</p>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5">
+                  \${item.tags.map(t => \`<span class="px-2.5 py-0.5 rounded-full bg-[#F8F1E7] text-[10.5px] font-bold text-[#6E5849]">#\${t}</span>\`).join('')}
+                </div>
+              </div>
+
+              <!-- Apply to App Button -->
+              <div class="pt-2 border-t border-[#F2E8DC] flex items-center gap-2">
+                <button
+                  type="button"
+                  data-select-logo="\${item.id}"
+                  class="soft-press flex-1 py-2.5 rounded-full text-xs font-bold transition-colors \${
+                    isCurrent
+                      ? 'bg-[#E67645] text-white shadow-sm'
+                      : 'bg-[#FFF5EC] hover:bg-[#E67645] text-[#E67645] hover:text-white border border-[#F0D5C2]'
+                  }"
+                >
+                  \${isCurrent ? '現在このロゴを適用中' : 'このロゴをアプリに試着する'}
+                </button>
+              </div>
+            </article>
+          \`;
+        }).join('');
+
+        grid.querySelectorAll('[data-select-logo]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            selectedId = btn.getAttribute('data-select-logo');
+            localStorage.setItem('nomaloft_selected_logo', selectedId);
+            syncHeaderPreview();
+            renderGrid();
+          });
+        });
+      }
+
+      document.querySelectorAll('.logo-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterMode = btn.getAttribute('data-filter-logo') || 'all';
+          document.querySelectorAll('.logo-filter-btn').forEach(b => b.classList.toggle('is-selected', b === btn));
+          renderGrid();
+        });
+      });
+
+      syncHeaderPreview();
+      renderGrid();
+    })();
+  </script>
 </body>
 </html>`)
 })
