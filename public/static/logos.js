@@ -5,9 +5,151 @@
    Zero Default Emojis · 100% Scalable Custom Vector SVGs
    ========================================================================= */
 
-window.NOMALOFT_LOGO_STORAGE_KEY = 'nomaloft_selected_logo_v2';
+window.NOMALOFT_LOGO_STORAGE_KEY = 'nomaloft_selected_logo_v3';
+
+const CT01_ICON_SVG = `
+      <svg viewBox="0 0 64 64" class="w-full h-full" fill="none">
+        <rect width="64" height="64" rx="18" fill="#FFF6EE"/>
+        <!-- Subtle Tech Grid Dots in Corners -->
+        <circle cx="11" cy="11" r="1.3" fill="#E5D3C3"/>
+        <circle cx="16" cy="11" r="1.3" fill="#E5D3C3"/>
+        <circle cx="11" cy="16" r="1.3" fill="#E5D3C3"/>
+        <!-- Saucer -->
+        <circle cx="29.5" cy="34" r="21.5" fill="#FFFDF9" stroke="#36261C" stroke-width="2.2"/>
+        <!-- Online / Wi-Fi Ready Status Dot on Saucer -->
+        <circle cx="14.5" cy="46.5" r="2.6" fill="#529973" stroke="#FFFDF9" stroke-width="1.2"/>
+        <!-- AC Power-Plug Shaped Cup Handle (Right Side) -->
+        <path d="M47 29.5 H52.2 C54.8 29.5 56.5 31.3 56.5 34 C56.5 36.7 54.8 38.5 52.2 38.5 H47" fill="#FFFDF9" stroke="#36261C" stroke-width="2.2" stroke-linejoin="round"/>
+        <line x1="56.8" y1="31.8" x2="60.2" y2="31.8" stroke="#E67645" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="56.8" y1="36.2" x2="60.2" y2="36.2" stroke="#E67645" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Warm Caramel Latte Surface -->
+        <circle cx="29.5" cy="34" r="16.8" fill="#D58454" stroke="#36261C" stroke-width="1.9"/>
+        <!-- Subtle Wi-Fi Signal Arcs Floating at Top of Cup -->
+        <path d="M22.5 10.2 A11.5 11.5 0 0 1 36.5 10.2" stroke="#529973" stroke-width="2.3" stroke-linecap="round"/>
+        <path d="M25.3 13.6 A7 7 0 0 1 33.7 13.6" stroke="#E67645" stroke-width="2.3" stroke-linecap="round"/>
+        <!-- Fluffy White Cat Latte Art -->
+        <path d="M19.5 29 L21.2 21.5 L26.4 25.5 Q29.5 24.7 32.6 25.5 L37.8 21.5 L39.5 29 C41.2 32 40.8 37.5 37.8 40.8 C34.8 43.8 24.2 43.8 21.2 40.8 C18.2 37.5 17.8 32 19.5 29 Z" fill="#FFFDF9"/>
+        <!-- Inner Pink/Caramel Ear Triangles -->
+        <polygon points="22.1,23.8 21.5,27.2 24.8,25.8" fill="#F4A4B8"/>
+        <polygon points="36.9,23.8 37.5,27.2 34.2,25.8" fill="#F4A4B8"/>
+        <!-- Cute Cat Face -->
+        <circle cx="25.8" cy="33.5" r="1.65" fill="#36261C"/>
+        <circle cx="33.2" cy="33.5" r="1.65" fill="#36261C"/>
+        <ellipse cx="23" cy="35.6" rx="1.8" ry="1.05" fill="#F4A4B8" opacity="0.75"/>
+        <ellipse cx="36" cy="35.6" rx="1.8" ry="1.05" fill="#F4A4B8" opacity="0.75"/>
+        <!-- Tiny w-shaped cat mouth -->
+        <path d="M27.5 35.8 Q28.5 37.1 29.5 35.9 Q30.5 37.1 31.5 35.8" stroke="#36261C" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Crema Whiskers -->
+        <line x1="16.2" y1="33" x2="19.2" y2="33.5" stroke="#FFF5E8" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="16.5" y1="36" x2="19.4" y2="35.8" stroke="#FFF5E8" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="42.8" y1="33" x2="39.8" y2="33.5" stroke="#FFF5E8" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="42.5" y1="36" x2="39.6" y2="35.8" stroke="#FFF5E8" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+`;
 
 window.NOMALOFT_LOGOS = [
+  // =======================================================================
+  // DEFINITIVE FUSION SERIES: CT-01アイコン × CT-04文字ロゴ × ねこ耳マップピン"o"
+  // =======================================================================
+  {
+    id: 'final01-cat-pin-window',
+    num: '決定版 A',
+    series: 'final-fusion',
+    badge: '公式決定カスタム（白ねこ窓マップピン"o"）',
+    recommended: true,
+    title: 'NomaLoft Official A（CT-01 × CT-04 × ねこ耳＆白ねこ窓ピン"o"）',
+    concept:
+      'ご指定の黄金コンビ！【アイコン: CT-01（ねこラテ俯瞰＋コンセント持ち手＋Wi-Fi電波）】×【文字ロゴ: CT-04（丸文字Fredoka＋猫耳o＋充電稲妻スパーク）】をベースに、Loftの「o」をCT-05のマップピン型へカスタムし、ピン自体に小さな猫耳と白ねこシルエット窓を組み込んだ決定版です。',
+    tags: ['ご指定カスタム決定版', 'CT-01×CT-04×CT-05融合', 'アプリ標準適用中'],
+    iconSvg: CT01_ICON_SVG,
+    wordmarkSvg: `
+      <svg viewBox="0 0 244 46" class="h-full w-auto" fill="none">
+        <!-- Noma (CT-04 Fredoka Bold + Cat Ears on first 'o') -->
+        <text x="2" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#36261C">Noma</text>
+        <path d="M30 15.5 L31.8 11 L35.2 14 M43.5 15.5 L41.7 11 L38.3 14" stroke="#36261C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- L of Loft -->
+        <text x="98" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#E67645">L</text>
+        <!-- Custom 'o' of Loft: CT-05 Map-Pin + Pointy Cat Ears + Cream Cat Silhouette Window -->
+        <g>
+          <polygon points="118.2,18.5 119.5,11 124.5,14.5" fill="#E67645"/>
+          <polygon points="134.8,18.5 133.5,11 128.5,14.5" fill="#E67645"/>
+          <path d="M126.5 37.2 C126.5 37.2 117 29.8 117 22.8 C117 17.5 121.2 13.6 126.5 13.6 C131.8 13.6 136 17.5 136 22.8 C136 29.8 126.5 37.2 126.5 37.2 Z" fill="#E67645"/>
+          <!-- Inner Cream Cat-Face Silhouette Window -->
+          <path d="M122 21.3 L123 18 L125.2 19.7 Q126.5 19.4 127.8 19.7 L130 18 L131 21.3 C131.7 22.8 131.3 25.4 129.7 26.6 C128.1 27.7 124.9 27.7 123.3 26.6 C121.7 25.4 121.3 22.8 122 21.3 Z" fill="#FFFDF9"/>
+          <circle cx="125" cy="23.3" r="0.85" fill="#36261C"/>
+          <circle cx="128" cy="23.3" r="0.85" fill="#36261C"/>
+        </g>
+        <!-- ft of Loft + CT-04 Charging Lightning Spark -->
+        <text x="139" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#E67645">ft</text>
+        <polygon points="171.5,8 167,15.5 171,15.5 169.2,22 175.2,14 171.2,14" fill="#E67645"/>
+      </svg>
+    `
+  },
+
+  {
+    id: 'final02-paw-pin-window',
+    num: '決定版 B',
+    series: 'final-fusion',
+    badge: 'ディテール違い（肉球マップピン"o"）',
+    recommended: true,
+    title: 'NomaLoft Official B（CT-01 × CT-04 × 肉球＆ねこ耳ピン"o"）',
+    concept:
+      '同じ【CT-01アイコン × CT-04文字ロゴ】構成で、Loftのねこ耳マップピン「o」の中心窓を「ぷっくり白い肉球マーク」にしたバリエーションです。小さいサイズでも肉球のドットが可愛く映えます。',
+    tags: ['ご指定カスタム派生', '肉球マップピン', '極小視認性◎'],
+    iconSvg: CT01_ICON_SVG,
+    wordmarkSvg: `
+      <svg viewBox="0 0 244 46" class="h-full w-auto" fill="none">
+        <text x="2" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#36261C">Noma</text>
+        <path d="M30 15.5 L31.8 11 L35.2 14 M43.5 15.5 L41.7 11 L38.3 14" stroke="#36261C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="98" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#E67645">L</text>
+        <!-- Custom 'o' of Loft: CT-05 Map-Pin + Cat Ears + Cute Paw Print inside -->
+        <g>
+          <polygon points="118.2,18.5 119.5,11 124.5,14.5" fill="#E67645"/>
+          <polygon points="134.8,18.5 133.5,11 128.5,14.5" fill="#E67645"/>
+          <path d="M126.5 37.2 C126.5 37.2 117 29.8 117 22.8 C117 17.5 121.2 13.6 126.5 13.6 C131.8 13.6 136 17.5 136 22.8 C136 29.8 126.5 37.2 126.5 37.2 Z" fill="#E67645"/>
+          <!-- Paw Pad + 3 Toe Beans in Cream -->
+          <ellipse cx="126.5" cy="24.6" rx="3.1" ry="2.4" fill="#FFFDF9"/>
+          <circle cx="123" cy="20.8" r="1.35" fill="#FFFDF9"/>
+          <circle cx="126.5" cy="19.6" r="1.45" fill="#FFFDF9"/>
+          <circle cx="130" cy="20.8" r="1.35" fill="#FFFDF9"/>
+        </g>
+        <text x="139" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#E67645">ft</text>
+        <polygon points="171.5,8 167,15.5 171,15.5 169.2,22 175.2,14 171.2,14" fill="#E67645"/>
+      </svg>
+    `
+  },
+
+  {
+    id: 'final03-tail-pin-window',
+    num: '決定版 C',
+    series: 'final-fusion',
+    badge: 'ディテール違い（しっぽ付きねこ耳ピン"o"）',
+    recommended: true,
+    title: 'NomaLoft Official C（CT-01 × CT-04 × かぎしっぽ付きねこ耳ピン"o"）',
+    concept:
+      '同じ【CT-01アイコン × CT-04文字ロゴ】構成で、Loftのマップピン「o」に猫耳＋シンプル白丸ターゲット窓＋先端からくるんと伸びる「幸運のかぎしっぽ」を添えたスッキリ可愛い仕上げです。',
+    tags: ['ご指定カスタム派生', 'かぎしっぽマップピン', 'シルエット明快'],
+    iconSvg: CT01_ICON_SVG,
+    wordmarkSvg: `
+      <svg viewBox="0 0 244 46" class="h-full w-auto" fill="none">
+        <text x="2" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#36261C">Noma</text>
+        <path d="M30 15.5 L31.8 11 L35.2 14 M43.5 15.5 L41.7 11 L38.3 14" stroke="#36261C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="98" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#E67645">L</text>
+        <!-- Custom 'o' of Loft: CT-05 Map-Pin + Cat Ears + Curled Cat Tail -->
+        <g>
+          <polygon points="118.2,18.5 119.5,11 124.5,14.5" fill="#E67645"/>
+          <polygon points="134.8,18.5 133.5,11 128.5,14.5" fill="#E67645"/>
+          <path d="M126.5 37.2 C126.5 37.2 117 29.8 117 22.8 C117 17.5 121.2 13.6 126.5 13.6 C131.8 13.6 136 17.5 136 22.8 C136 29.8 126.5 37.2 126.5 37.2 Z" fill="#E67645"/>
+          <circle cx="126.5" cy="22.8" r="4.3" fill="#FFFDF9"/>
+          <!-- Cute Curled Tail from Bottom Tip of Map Pin -->
+          <path d="M126.5 36.8 C130.5 39.5 135.5 38 135 34.2" stroke="#E67645" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+        </g>
+        <text x="139.5" y="34" font-family="'Fredoka', 'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="32" fill="#E67645">ft</text>
+        <polygon points="172,8 167.5,15.5 171.5,15.5 169.8,22 175.8,14 171.8,14" fill="#E67645"/>
+      </svg>
+    `
+  },
+
   // =======================================================================
   // FEATURED SERIES: ねこラテアート × ノマドワーカー（若干のTech）全6案
   // =======================================================================

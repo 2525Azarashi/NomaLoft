@@ -70,12 +70,17 @@
     `;
   }
 
-  // Rounded Line Icons & Map Pin Glyphs (Zero Default Emojis)
+  // Rounded Line Icons & Cat-Themed Map Pin Glyphs (Zero Default Emojis)
   const SVG = {
-    mugIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h9.5v5.2a4.7 4.7 0 0 1-9.5 0V6.5z" fill="currentColor" fill-opacity="0.18"/><path d="M13.5 7.8h1.6a2.1 2.1 0 0 1 0 4.2h-1.6"/></svg>`,
-    beanIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><ellipse cx="10" cy="10" rx="4.8" ry="6.6" transform="rotate(-25 10 10)"/><path d="M8 4.8c1.6 2.6.9 6.6 4 9.8"/></svg>`,
-    clusterSteam: `<svg viewBox="0 0 20 10" class="w-3.5 h-2 text-[#E67645]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8.5c-.6-2 1.2-3 .6-5M11 8.5c-.6-2 1.2-3 .6-5M15.5 8.5c-.5-1.6 1-2.5.5-4"/></svg>`,
-    floatHeart: `<svg viewBox="0 0 20 20" class="w-full h-full"><path d="M10 17.2s-6.5-4.1-6.5-8.6A3.7 3.7 0 0 1 10 6.2a3.7 3.7 0 0 1 6.5 2.4c0 4.5-6.5 8.6-6.5 8.6z" fill="#F48FB1" stroke="#FFFFFF" stroke-width="1.4"/></svg>`,
+    mugIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 7h9.2v4.8a4.6 4.6 0 0 1-9.2 0V7z" fill="currentColor" fill-opacity="0.2"/><path d="M13.4 8.2h1.5a2 2 0 0 1 0 4h-1.5"/><circle cx="7.4" cy="10.2" r="0.85" fill="currentColor" stroke="none"/><circle cx="10.2" cy="10.2" r="0.85" fill="currentColor" stroke="none"/></svg>`,
+    beanIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="currentColor"><ellipse cx="10" cy="12" rx="3.8" ry="3"/><circle cx="5.8" cy="7.5" r="1.5"/><circle cx="8.6" cy="5.8" r="1.55"/><circle cx="11.6" cy="5.8" r="1.55"/><circle cx="14.2" cy="7.5" r="1.5"/></svg>`,
+    clusterEars: `<svg viewBox="0 0 36 12" class="noma-cluster-ears" fill="none"><polygon points="4,11 7.5,2 14,9" fill="#FFFDF9" stroke="#E67645" stroke-width="2" stroke-linejoin="round"/><polygon points="32,11 28.5,2 22,9" fill="#FFFDF9" stroke="#E67645" stroke-width="2" stroke-linejoin="round"/></svg>`,
+    pinEarsFull: `<svg viewBox="0 0 28 11" class="mug-pin-ears" fill="none"><polygon points="3,10 5.8,1.5 11.5,8" fill="#E67645" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><polygon points="25,10 22.2,1.5 16.5,8" fill="#E67645" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+    pinEarsPartial: `<svg viewBox="0 0 28 11" class="mug-pin-ears" fill="none"><polygon points="3,10 5.8,1.5 11.5,8" fill="#FFF5E4" stroke="#DFC3A8" stroke-width="1.5" stroke-linejoin="round"/><polygon points="25,10 22.2,1.5 16.5,8" fill="#FFF5E4" stroke="#DFC3A8" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
+    clusterSteam: `<svg viewBox="0 0 20 10" class="w-3.5 h-2 text-[#E67645]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5.5 7.8a5.5 5.5 0 0 1 9 0"/><circle cx="10" cy="8.8" r="1" fill="currentColor" stroke="none"/></svg>`,
+    floatHeart: `<svg viewBox="0 0 22 22" class="w-full h-full"><path d="M11 19s-7-4.3-7-9A4 4 0 0 1 11 7.3 4 4 0 0 1 18 10c0 4.7-7 9-7 9z" fill="#F48FB1" stroke="#FFFFFF" stroke-width="1.3"/><ellipse cx="11" cy="13.2" rx="2.1" ry="1.6" fill="#FFFDF9"/><circle cx="8.7" cy="10.5" r="0.95" fill="#FFFDF9"/><circle cx="11" cy="9.7" r="1" fill="#FFFDF9"/><circle cx="13.3" cy="10.5" r="0.95" fill="#FFFDF9"/></svg>`,
+    pawStamp: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="currentColor"><ellipse cx="9" cy="11.5" rx="3.4" ry="2.6"/><circle cx="5.2" cy="7.4" r="1.4"/><circle cx="7.7" cy="5.8" r="1.45"/><circle cx="10.3" cy="5.8" r="1.45"/><circle cx="12.8" cy="7.4" r="1.4"/></svg>`,
+    imakokoCat: `<svg viewBox="0 0 28 28" class="imakoko-cat-core" fill="none"><polygon points="5,13 7,4.5 12.5,9" fill="#E67645" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/><polygon points="23,13 21,4.5 15.5,9" fill="#E67645" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/><circle cx="14" cy="15.5" r="8.5" fill="#E67645" stroke="#FFFFFF" stroke-width="2.2"/><circle cx="11.3" cy="15.2" r="1.15" fill="#FFFDF9"/><circle cx="16.7" cy="15.2" r="1.15" fill="#FFFDF9"/><path d="M12.6 17.4 Q14 18.6 15.4 17.4" stroke="#FFFDF9" stroke-width="1.3" stroke-linecap="round"/></svg>`,
     plug: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.5v3.2M11.5 2.5v3.2M4.5 5.7h9v2.8a4.5 4.5 0 0 1-9 0V5.7zM9 13v2.8"/></svg>`,
     wifi: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.4 7a10.2 10.2 0 0 1 13.2 0M5.2 10a6.3 6.3 0 0 1 7.6 0M8.8 13h.4"/></svg>`,
     minus: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6.3"/><line x1="6.2" y1="9" x2="11.8" y2="9"/></svg>`,
@@ -116,13 +121,17 @@
     all: { lat: 34.715, lng: 135.505, zoom: 11 },
     imakoko: { lat: 34.6935, lng: 135.5025, zoom: 15 },
     umeda: { lat: 34.7042, lng: 135.4992, zoom: 15 },
+    shin_osaka: { lat: 34.7455, lng: 135.4985, zoom: 13 },
     kitahama: { lat: 34.6898, lng: 135.5038, zoom: 15 },
+    kyobashi: { lat: 34.7015, lng: 135.5315, zoom: 13 },
     shinsaibashi: { lat: 34.6708, lng: 135.4992, zoom: 15 },
     tennoji: { lat: 34.6476, lng: 135.5145, zoom: 15 },
+    sakai: { lat: 34.5585, lng: 135.4725, zoom: 12 },
     kyoto: { lat: 35.0048, lng: 135.7635, zoom: 14 },
-    kobe: { lat: 34.6902, lng: 135.1915, zoom: 15 },
+    kobe: { lat: 34.6902, lng: 135.1915, zoom: 14 },
     hanshin: { lat: 34.7415, lng: 135.3485, zoom: 13 },
-    nara: { lat: 34.6838, lng: 135.8185, zoom: 14 }
+    nara: { lat: 34.6858, lng: 135.8055, zoom: 13 },
+    shiga_wakayama: { lat: 34.82, lng: 135.62, zoom: 10 }
   };
 
   // --- Map & Cluster Instances ---
@@ -185,7 +194,7 @@
     return m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${m}m`;
   }
 
-  const LOGO_STORAGE_KEY = window.NOMALOFT_LOGO_STORAGE_KEY || 'nomaloft_selected_logo_v2';
+  const LOGO_STORAGE_KEY = window.NOMALOFT_LOGO_STORAGE_KEY || 'nomaloft_selected_logo_v3';
 
   function getActiveBrandLogo() {
     const list = window.NOMALOFT_LOGOS || [];
@@ -235,11 +244,11 @@
       dom.kineticConcept.innerHTML = `<span class="k-word-in">${conceptPhrases[conceptIdx]}</span>`;
     }, 3800);
 
-    // Click icon to quickly cycle through the 6 Cat-Latte × Nomad Tech proposals live in the header!
+    // Click icon to quickly cycle through the Final Fusion + Cat-Tech proposals live in the header!
     document.getElementById('header-mascot-btn')?.addEventListener('click', () => {
       const allLogos = window.NOMALOFT_LOGOS || [];
-      const catTechLogos = allLogos.filter((l) => l.series === 'cat-tech');
-      const cycleList = catTechLogos.length > 0 ? catTechLogos : allLogos;
+      const featuredLogos = allLogos.filter((l) => l.series === 'final-fusion' || l.series === 'cat-tech');
+      const cycleList = featuredLogos.length > 0 ? featuredLogos : allLogos;
       if (cycleList.length > 0) {
         const cur = getActiveBrandLogo();
         const curIdx = cycleList.findIndex((l) => l.id === cur?.id);
@@ -251,6 +260,13 @@
         setHeaderMascot('happy');
         setTimeout(() => setHeaderMascot('normal'), 2200);
       }
+    });
+
+    // Interactive Loaf-Cat on Map Legend ("看板ねこ")
+    document.getElementById('legend-cat-btn')?.addEventListener('click', () => {
+      setHeaderMascot('happy');
+      setTimeout(() => setHeaderMascot('normal'), 2400);
+      showToast('ゴロゴロ…看板ねこも電源席を見守り中だよ');
     });
   }
 
@@ -316,10 +332,11 @@
       iconCreateFunction: function (cluster) {
         const count = cluster.getChildCount();
         const sizeClass = count >= 20 ? 'cluster-lg' : '';
-        const px = count >= 20 ? 50 : 44;
+        const px = count >= 20 ? 52 : 46;
         return L.divIcon({
           html: `
             <div class="noma-cluster-badge ${sizeClass}" title="${count}軒のカフェが集まっています（タップで展開）">
+              ${SVG.clusterEars}
               ${SVG.clusterSteam}
               <span class="noma-cluster-count">${count}</span>
             </div>
@@ -366,9 +383,9 @@
     if (originMarker) map.removeLayer(originMarker);
     const icon = L.divIcon({
       className: 'imakoko-pin',
-      html: `<div class="imakoko-dot" title="いまここ（基準位置）"><div class="imakoko-ring"></div><div class="imakoko-core"></div></div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      html: `<div class="imakoko-dot" title="いまここ（基準位置）"><div class="imakoko-ring"></div>${SVG.imakokoCat}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
     });
     originMarker = L.marker([state.lat, state.lng], { icon, zIndexOffset: 950 }).addTo(map);
   }
@@ -387,6 +404,7 @@
       <div class="mug-pin-wrap ${stateClasses}" data-pin-wrap="${spot.id}">
         <div class="mug-pin-label">${spot.name}</div>
         ${withHeart ? `<span class="pin-float-heart">${SVG.floatHeart}</span>` : ''}
+        ${isFull ? SVG.pinEarsFull : SVG.pinEarsPartial}
         <div class="mug-pin-badge">
           ${isBean ? SVG.beanIcon : SVG.mugIcon}
         </div>
@@ -406,8 +424,8 @@
       const icon = L.divIcon({
         className: 'noma-mug-marker',
         html: buildPinHTML(spot, isSelected, isHovered, false),
-        iconSize: [36, 36],
-        iconAnchor: [18, 30]
+        iconSize: [38, 40],
+        iconAnchor: [19, 34]
       });
 
       const marker = L.marker([spot.lat, spot.lng], {
@@ -434,8 +452,8 @@
       L.divIcon({
         className: 'noma-mug-marker',
         html: buildPinHTML(entry.spot, isSelected, isHovered, withHeart),
-        iconSize: [36, 36],
-        iconAnchor: [18, 30]
+        iconSize: [38, 40],
+        iconAnchor: [19, 34]
       })
     );
     entry.marker.setZIndexOffset(isSelected ? 1000 : isHovered ? 850 : 100);
@@ -537,7 +555,21 @@
     return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F4ECE3] text-[#8E796A] text-xs font-medium">${SVG.minus}<span>Wi-Fiなし</span></span>`;
   }
 
+  function updateAreaTabCounts() {
+    document.querySelectorAll('#area-tabs-nav [data-region]').forEach((btn) => {
+      const r = btn.getAttribute('data-region');
+      const chip = btn.querySelector('[data-area-count]');
+      if (!chip || !r) return;
+      if (r === 'all') {
+        chip.textContent = String(state.spots.length);
+      } else if (r !== 'imakoko') {
+        chip.textContent = String(state.spots.filter((s) => s.areaId === r).length);
+      }
+    });
+  }
+
   function updateAllViews() {
+    updateAreaTabCounts();
     const filtered = getFilteredSpots();
 
     // Friendly Count Text
@@ -639,8 +671,8 @@
                   } text-xs font-bold inline-flex items-center gap-1"
                   aria-label="ブックマーク"
                 >
-                  ${isSaved ? SVG.bookmarkFill : SVG.bookmark}
-                  <span>ブックマーク</span>
+                  ${isSaved ? SVG.pawStamp : SVG.bookmark}
+                  <span>${isSaved ? 'お気に入りニャ' : 'ブックマーク'}</span>
                 </button>
 
                 <button

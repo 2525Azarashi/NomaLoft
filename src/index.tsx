@@ -177,8 +177,8 @@ app.get('/', (c) => {
               <span id="header-wordmark-slot" class="h-7 inline-flex items-center">
                 <span class="font-display font-bold text-xl tracking-tight text-espresso">NomaLoft</span>
               </span>
-              <a href="/logos" class="soft-press px-2 py-0.5 rounded-full bg-[#FFF0E6] hover:bg-cafeorange hover:text-white border border-[#F2CBB6] text-cafeorange text-[10.5px] font-bold whitespace-nowrap transition-colors" title="ねこラテ×ノマドTech ロゴ6案を比較・着せ替え">
-                ねこ×Techロゴ
+              <a href="/logos" class="soft-press px-2 py-0.5 rounded-full bg-[#FFF0E6] hover:bg-cafeorange hover:text-white border border-[#F2CBB6] text-cafeorange text-[10.5px] font-bold whitespace-nowrap transition-colors" title="決定版カスタムロゴ＆全案を比較・微調整">
+                決定版ロゴ
               </a>
             </div>
             <p class="text-xs font-bold text-latte truncate mt-0.5">
@@ -321,18 +321,22 @@ app.get('/', (c) => {
       <nav
         id="area-tabs-nav"
         aria-label="関西エリアタブ"
-        class="pointer-events-auto max-w-full overflow-x-auto no-scrollbar bg-white/92 backdrop-blur-md border border-[#E8DDD0] rounded-full p-1.5 shadow-[0_8px_24px_rgba(92,62,40,0.1)] flex items-center gap-1"
+        class="pointer-events-auto max-w-full overflow-x-auto no-scrollbar bg-white/94 backdrop-blur-md border border-[#E8DDD0] rounded-full p-1.5 shadow-[0_8px_24px_rgba(92,62,40,0.1)] flex items-center gap-1"
       >
-        <button type="button" data-region="all" class="soft-press tab-pill is-selected px-3.5 py-1.5 text-xs font-bold">関西すべて</button>
+        <button type="button" data-region="all" class="soft-press tab-pill is-selected px-3.5 py-1.5 text-xs font-bold inline-flex items-center gap-1.5"><span>関西すべて</span><span data-area-count class="count-chip">128</span></button>
         <button type="button" data-region="imakoko" id="region-imakoko-tab" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold hidden">いまここ周辺</button>
-        <button type="button" data-region="umeda" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">梅田・新大阪</button>
-        <button type="button" data-region="kitahama" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">北浜・本町</button>
-        <button type="button" data-region="shinsaibashi" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">心斎橋・難波</button>
-        <button type="button" data-region="tennoji" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">天王寺</button>
-        <button type="button" data-region="kyoto" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">京都</button>
-        <button type="button" data-region="kobe" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">神戸</button>
-        <button type="button" data-region="hanshin" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">西宮・芦屋</button>
-        <button type="button" data-region="nara" class="soft-press tab-pill px-3.5 py-1.5 text-xs font-bold">奈良</button>
+        <button type="button" data-region="umeda" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>梅田・中崎町</span><span data-area-count class="count-chip">16</span></button>
+        <button type="button" data-region="shin_osaka" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>新大阪・江坂・北摂</span><span data-area-count class="count-chip">9</span></button>
+        <button type="button" data-region="kitahama" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>北浜・本町</span><span data-area-count class="count-chip">16</span></button>
+        <button type="button" data-region="kyobashi" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>京橋・天満・枚方</span><span data-area-count class="count-chip">7</span></button>
+        <button type="button" data-region="shinsaibashi" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>心斎橋・難波</span><span data-area-count class="count-chip">14</span></button>
+        <button type="button" data-region="tennoji" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>天王寺</span><span data-area-count class="count-chip">10</span></button>
+        <button type="button" data-region="sakai" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>堺・関空</span><span data-area-count class="count-chip">5</span></button>
+        <button type="button" data-region="kyoto" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>京都</span><span data-area-count class="count-chip">18</span></button>
+        <button type="button" data-region="kobe" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>神戸・姫路</span><span data-area-count class="count-chip">16</span></button>
+        <button type="button" data-region="hanshin" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>西宮・芦屋・宝塚</span><span data-area-count class="count-chip">10</span></button>
+        <button type="button" data-region="nara" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>奈良・生駒</span><span data-area-count class="count-chip">10</span></button>
+        <button type="button" data-region="shiga_wakayama" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1"><span>滋賀・和歌山</span><span data-area-count class="count-chip">6</span></button>
       </nav>
 
       <!-- Contextual "Search in this map area" Pill (Shown when user pans/zooms map) -->
@@ -351,15 +355,31 @@ app.get('/', (c) => {
     <!-- Leaflet Map Canvas -->
     <div id="nomaloft-map" class="w-full h-full calm-cafe-tiles z-10"></div>
 
-    <!-- Map Bottom-Left Compact Legend -->
-    <div class="hidden md:flex absolute bottom-4 left-4 z-[500] bg-white/92 backdrop-blur-sm border border-[#E8DDD0] rounded-full px-3.5 py-1.5 shadow-sm items-center gap-3 text-[11px] font-bold text-espresso">
+    <!-- Map Bottom-Left Compact Legend + Perched Loaf-Cat ("看板ねこ") -->
+    <div class="hidden md:flex absolute bottom-4 left-4 z-[500] bg-white/94 backdrop-blur-sm border border-[#E8DDD0] rounded-full pl-2.5 pr-4 py-1.5 shadow-sm items-center gap-3 text-[11px] font-bold text-espresso">
+      <button
+        id="legend-cat-btn"
+        type="button"
+        class="soft-press inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFF5EC] border border-[#F0D5C2] text-cafeorange hover:bg-cafeorange hover:text-white transition-colors"
+        title="看板ねこをなでる"
+      >
+        <svg viewBox="0 0 28 20" class="w-6 h-4" fill="none">
+          <path d="M5 15 C5 10.5 8.5 8 13 8 C17.5 8 20.5 10.5 20.5 15 Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          <polygon points="7,9.5 8,4.5 11.5,8" fill="currentColor" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <polygon points="18,9.5 17,4.5 13.5,8" fill="currentColor" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+          <path d="M20.5 14.5 C23.5 14.5 25.5 12 24.5 9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <circle cx="11" cy="11.8" r="0.9" fill="currentColor"/>
+          <circle cx="14.5" cy="11.8" r="0.9" fill="currentColor"/>
+        </svg>
+        <span>看板ねこ</span>
+      </button>
       <span class="inline-flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-full bg-cafeorange inline-block"></span>
-        <span>電源＋Wi-Fiあり</span>
+        <span>ねこマグ（電源＋Wi-Fi）</span>
       </span>
       <span class="inline-flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-full bg-[#FFF5E4] border border-[#DFC3A8] inline-block"></span>
-        <span>一部のみ</span>
+        <span>一部対応・肉球ピン</span>
       </span>
       <span class="text-[#9A8475] font-normal">ズームで店名表示</span>
     </div>
@@ -392,10 +412,15 @@ app.get('/', (c) => {
       aria-labelledby="bs-title"
       class="absolute left-3 right-3 bottom-3 z-[800] max-w-3xl mx-auto bg-white border border-[#E8DDD0] rounded-[28px] shadow-[0_-8px_36px_rgba(92,62,40,0.18)] translate-y-[120%] transition-transform duration-300 ease-out max-h-[82%] flex flex-col overflow-hidden"
     >
-      <!-- Drag Handle -->
+      <!-- Drag Handle with Subtle Peeking Cat -->
       <div id="bs-handle" class="pt-2.5 pb-2 px-5 cursor-grab active:cursor-grabbing flex items-center justify-between border-b border-[#F2E8DC] bg-[#FFFDF9] shrink-0 touch-none">
         <span id="bs-area-badge" class="px-2.5 py-0.5 rounded-full bg-milktea text-latte text-[11px] font-bold">大阪・北浜</span>
-        <div class="w-11 h-1.5 rounded-full bg-[#E6D8C9]"></div>
+        <div class="flex items-center gap-1.5 text-[#D8B99E]">
+          <svg viewBox="0 0 24 12" class="w-5 h-2.5 text-cafeorange/75" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10 L5.5 3 L9.5 7.5 Q12 6.8 14.5 7.5 L18.5 3 L21 10"/>
+          </svg>
+          <div class="w-9 h-1.5 rounded-full bg-[#E6D8C9]"></div>
+        </div>
         <div class="flex items-center gap-1.5">
           <button id="bs-size-btn" type="button" class="soft-press px-3 py-1 rounded-full bg-milktea hover:bg-butter-light text-[11px] font-bold text-espresso">大きく見る</button>
           <button id="bs-close-btn" type="button" class="soft-press w-7 h-7 rounded-full bg-milktea hover:bg-cafeorange hover:text-white flex items-center justify-center text-latte transition-colors" aria-label="とじる">
@@ -461,19 +486,19 @@ app.get('/logos', (c) => {
     <div class="bg-gradient-to-b from-white to-[#FFF9F1] border border-[#E8DDD0] rounded-[28px] p-6 sm:p-8 shadow-[0_10px_28px_-6px_rgba(102,71,48,0.08)]">
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div class="space-y-2 max-w-3xl">
-          <p class="text-xs font-bold text-[#529973] tracking-wider">CAT LATTE ART × NOMAD WORKER EDITION</p>
+          <p class="text-xs font-bold text-[#E67645] tracking-wider">OFFICIAL CUSTOM FUSION LOGO</p>
           <h1 class="text-2xl sm:text-3xl font-black text-[#36261C] leading-snug">
-            「ねこラテアート × ノマド（若干のTech）」進化版 6案
+            決定版カスタム：CT-01アイコン × CT-04文字ロゴ × ねこマップピン「o」
           </h1>
           <p class="text-xs sm:text-sm text-[#6E5849] leading-relaxed">
-            お選びいただいた<strong>「ねこラテアート」</strong>のあたたかい癒やしをベースに、冷たいサイバー感にならない<strong>「ほんのり知的なノマド・Tech要素（コンセント持ち手・Wi-Fi電波・PCキーボード・コード記号ひげ・丸メガネ＆充電・GPSピン皿）」</strong>を掛け合わせた6つの最適解です。文字ロゴ側にも端末カーソル<code>_</code>やキーキャップなどのTechアクセントを織り込んでいます。
+            ご指定いただいた<strong>「アイコン: CT-01（ねこラテ俯瞰＋コンセント持ち手＋Wi-Fi電波）」×「文字ロゴ: CT-04（丸文字Fredoka＋猫耳o＋充電スパーク）」</strong>に、<strong>Loftの「o」をCT-05のマップピン型＋猫要素（白ねこ窓 / 肉球窓 / かぎしっぽ）</strong>へカスタムした決定版3パターン（A・B・C）を完成させ、標準適用しました！
           </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <button type="button" data-filter-logo="cat-tech" class="logo-filter-btn tab-pill is-selected px-4 py-2 text-xs font-bold">ねこラテ×Tech 特集 (6)</button>
-          <button type="button" data-filter-logo="rec" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">特におすすめ本命 (3)</button>
-          <button type="button" data-filter-logo="all" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">過去原案と比較 (10)</button>
+          <button type="button" data-filter-logo="final-fusion" class="logo-filter-btn tab-pill is-selected px-4 py-2 text-xs font-bold">決定版カスタム (3)</button>
+          <button type="button" data-filter-logo="cat-tech" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">ねこラテ×Tech 6案</button>
+          <button type="button" data-filter-logo="all" class="logo-filter-btn tab-pill px-4 py-2 text-xs font-bold">すべて表示 (13)</button>
         </div>
       </div>
     </div>
@@ -487,12 +512,12 @@ app.get('/logos', (c) => {
   <script src="/static/logos.js"></script>
   <script>
     (function() {
-      const STORAGE_KEY = window.NOMALOFT_LOGO_STORAGE_KEY || 'nomaloft_selected_logo_v2';
+      const STORAGE_KEY = window.NOMALOFT_LOGO_STORAGE_KEY || 'nomaloft_selected_logo_v3';
       const logos = window.NOMALOFT_LOGOS || [];
       const grid = document.getElementById('logo-cards-grid');
       const livePreview = document.getElementById('live-header-preview');
       let selectedId = localStorage.getItem(STORAGE_KEY) || logos[0]?.id;
-      let filterMode = 'cat-tech';
+      let filterMode = 'final-fusion';
 
       function updateFaviconFromSvg(svgStr) {
         const uri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgStr.trim());
@@ -511,10 +536,10 @@ app.get('/logos', (c) => {
 
       function renderGrid() {
         const list =
-          filterMode === 'cat-tech'
+          filterMode === 'final-fusion'
+            ? logos.filter(l => l.series === 'final-fusion')
+            : filterMode === 'cat-tech'
             ? logos.filter(l => l.series === 'cat-tech')
-            : filterMode === 'rec'
-            ? logos.filter(l => l.recommended)
             : logos;
         grid.innerHTML = list.map(item => {
           const isCurrent = item.id === selectedId;
