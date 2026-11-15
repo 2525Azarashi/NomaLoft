@@ -1,674 +1,638 @@
-/* =====================================================================
-   NomaLoft KANSAI — Landscape Spatial Web Application (app.js)
-   - Kansai First (Kitahama / Umeda & Nakazakicho / Horie / Kyoto / Kobe)
-   - 100% Free OpenStreetMap Tile Layer + Live Overpass API Overlay
-   - Strictly ZERO Default Unicode Emojis (100% Custom Line-Art SVGs)
-   - Full Motion Suite:
-     1. Kinetic Typography (Split-Flap Stagger + Editorial Wave)
-     2. UI/UX Micro-Animations (Tactile Cursor, SVG Bean Confetti, Ticket Stub)
-     3. Infographic Animation (Radial Arcs, Count-up, Pentagon Radar, Hourly Bars)
-     4. Pull to Refresh (V60 Hand-Drip Line-Art Animation)
-     5. Skeleton Screen (Warm Washi Linen Shimmer)
-     6. Toast Notification (Spring Stack + Progress + Undo)
-     7. Draggable Bottom Sheet (Map-Stage Dossier with Snap & Swipe Close)
-     8. Swipe Action (Right = Bookmark Passbook, Left = Stamp Check-in)
-     9. Auto Complete (Match Highlight + Keyboard Up/Down/Enter)
-   ===================================================================== */
+/* =========================================================================
+   NomaLoft — Kansai Cafe & Coworking Power / Wi-Fi / Official SNS Explorer
+   Full-Bleed Free OpenStreetMap · Zero Default Emojis · High-Craft UI/UX
+   ========================================================================= */
 
 (function () {
   'use strict';
 
-  // --- Bespoke 1.6px Architectural Line-Art SVG Icon Library (Zero Emojis) ---
-  const SVG = {
-    cup: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10v5a5 5 0 0 1-10 0V7z"/><path d="M14 8h1.8a2.2 2.2 0 0 1 0 4.4H14"/><path d="M7 4.2c0-1 .8-1.4.8-2.2M10.5 4.2c0-1 .8-1.4.8-2.2"/></svg>`,
-    desk: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="12" height="7.5" rx="1.5"/><path d="M2.5 14h15M5 14v3.5M15 14v3.5M10 11.5V14"/></svg>`,
-    pin: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17.5s-5.5-4.6-5.5-9a5.5 5.5 0 1 1 11 0c0 4.4-5.5 9-5.5 9z"/><circle cx="10" cy="8.5" r="1.8"/></svg>`,
-    plug: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3.5v4M12.5 3.5v4M5.5 7.5h9v3a4.5 4.5 0 0 1-9 0v-3zM10 15v2.5"/></svg>`,
-    bolt: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5L4.8 11h4.7l-.8 6.5L15.2 9h-4.7l.5-6.5z"/></svg>`,
-    mic: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7.5" y="3" width="5" height="8.5" rx="2.5"/><path d="M5 10a5 5 0 0 0 10 0M10 15v2.5M7.5 17.5h5"/></svg>`,
-    book: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 4.5h5a2 2 0 0 1 2 2v10a1.5 1.5 0 0 0-1.5-1.5h-5.5v-10.5zM16.5 4.5h-5a2 2 0 0 0-2 2v10a1.5 1.5 0 0 1 1.5-1.5h5.5v-10.5z"/></svg>`,
-    monitor: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="15" height="10" rx="1.5"/><path d="M7 16.5h6M10 13.5v3"/></svg>`,
-    bookmark: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.5h9a1 1 0 0 1 1 1v12.5L10 13.8l-5.5 3.2V4.5a1 1 0 0 1 1-1z"/></svg>`,
-    bookmarkFilled: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M5.5 3.5h9a1 1 0 0 1 1 1v12.5L10 13.8l-5.5 3.2V4.5a1 1 0 0 1 1-1z"/></svg>`,
-    stamp: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.2"/><path d="M7.2 10.2l2 2 3.8-4"/></svg>`,
-    route: `<svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="15" r="2"/><circle cx="15" cy="5" r="2"/><path d="M7 15h3.5a2.5 2.5 0 0 0 0-5h-1a2.5 2.5 0 0 1 0-5H13"/></svg>`,
-    beanParticle: `<svg viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="4.5" ry="6" transform="rotate(-25 8 8)" fill="#C06044" stroke="#221B17" stroke-width="1.3"/><path d="M6 3.5c1.5 2.5.8 6.2 4 9" stroke="#FCF9F4" stroke-width="1.1" stroke-linecap="round"/></svg>`,
-    starParticle: `<svg viewBox="0 0 16 16" fill="none"><path d="M8 1.5L9.6 6.4L14.5 8L9.6 9.6L8 14.5L6.4 9.6L1.5 8L6.4 6.4Z" fill="#D4B267" stroke="#221B17" stroke-width="1.1"/></svg>`,
-    leafParticle: `<svg viewBox="0 0 16 16" fill="none"><path d="M3 13C3 6.5 7.5 3 13 3C13 8.5 9.5 13 3 13Z" fill="#6C8F73" stroke="#221B17" stroke-width="1.2"/></svg>`
+  // --- Clean Inline SVG Icons (Zero Default Emojis) ---
+  const ICONS = {
+    plug: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.5v3.2M11.5 2.5v3.2M4.5 5.7h9v2.8a4.5 4.5 0 0 1-9 0V5.7zM9 13v2.8"/></svg>`,
+    wifi: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 6.8a10.5 10.5 0 0 1 13.6 0M5 9.8a6.5 6.5 0 0 1 8 0M8.8 13h.4"/></svg>`,
+    off: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="4" x2="14" y2="14"/><circle cx="9" cy="9" r="6.5"/></svg>`,
+    globe: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="9" r="6.8"/><path d="M2.4 9h13.2M9 2.2c2 2.1 2 11.5 0 13.6M9 2.2c-2 2.1-2 11.5 0 13.6"/></svg>`,
+    insta: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="13" height="13" rx="3.8"/><circle cx="9" cy="9" r="3"/><circle cx="12.8" cy="5.2" r="0.7" fill="currentColor"/></svg>`,
+    xLogo: `<svg viewBox="0 0 18 18" class="w-3 h-3 shrink-0" fill="currentColor"><path d="M13.8 2.5h2.3l-5 5.7 5.9 7.3h-4.6l-3.6-4.7-4.1 4.7H2.4l5.4-6.1L2.1 2.5h4.7l3.2 4.3 3.8-4.3zm-.8 11.7h1.3L6 3.8H4.6l8.4 10.4z"/></svg>`,
+    route: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="3,9 15,3 9,15 8,10 3,9"/></svg>`,
+    bookmark: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4.5 3h9a1 1 0 0 1 1 1v11.5L9 12.4l-5.5 3.1V4a1 1 0 0 1 1-1z"/></svg>`,
+    bookmarkFill: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="currentColor"><path d="M4.5 3h9a1 1 0 0 1 1 1v11.5L9 12.4l-5.5 3.1V4a1 1 0 0 1 1-1z"/></svg>`,
+    ext: `<svg viewBox="0 0 14 14" class="w-2.5 h-2.5 shrink-0 opacity-70" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3H11v5.5M11 3L4.5 9.5"/></svg>`,
+    bean: `<svg viewBox="0 0 14 14" fill="none"><ellipse cx="7" cy="7" rx="4" ry="5.5" transform="rotate(-28 7 7)" fill="#CA6B3E" stroke="#211813" stroke-width="1.2"/><path d="M5.2 3c1.3 2.2.7 5.5 3.6 8" stroke="#FFFDFA" stroke-width="1" stroke-linecap="round"/></svg>`,
+    spark: `<svg viewBox="0 0 14 14" fill="none"><path d="M7 1L8.5 5.5L13 7L8.5 8.5L7 13L5.5 8.5L1 7L5.5 5.5Z" fill="#F2D283" stroke="#211813" stroke-width="1"/></svg>`
   };
 
-  // --- Application State (Default: Osaka Kitahama / Nakanoshima) ---
+  // --- Application State ---
   const state = {
-    lat: 34.6918,
-    lng: 135.5064,
-    areaId: 'kitahama',
-    areaLabel: '大阪・北浜 / 中之島',
+    lat: 34.6922,
+    lng: 135.5045,
+    region: 'all',
     category: 'all',
-    filter: '',
+    powerOnly: false,
+    wifiOnly: false,
+    savedOnly: false,
     query: '',
     sort: 'distance',
-    jitterSeed: 0,
-    spots: [],
-    selectedSpotId: null,
-    savedIds: new Set(['spot-kitahama-river', 'spot-kyoto-machiya']),
-    savedOnlyMode: false,
-    checkedInIds: new Set(),
-    beans: 45,
-    washiMapTone: true,
-    walkRingVisible: true,
-    osmLiveActive: false,
-    osmNodes: [],
-    autocompleteItems: [],
-    acActiveIndex: -1,
-    sheetExpanded: false,
-    ambienceOn: false,
-    audioCtx: null,
-    ambienceNodes: [],
-    pomoSeconds: 25 * 60,
-    pomoRunning: false,
-    pomoInterval: null
+    verifiedSpots: [],
+    osmSpots: [], // Dynamically fetched real Kansai street cafes from OpenStreetMap Overpass
+    osmLoadedCenters: [],
+    selectedId: null,
+    savedIds: new Set(['kth-brooklyn-kitahama', 'umd-onthe-umeda', 'kyt-fabcafe-kyoto']),
+    cafeMapTone: true,
+    acItems: [],
+    acIndex: -1,
+    sheetFull: false,
+    mobileListHidden: false
   };
 
-  const KANSAI_AREA_COORDS = {
-    kitahama: { lat: 34.6918, lng: 135.5064, label: '大阪・北浜 / 中之島', zoom: 15 },
-    umeda: { lat: 34.7055, lng: 135.5025, label: '大阪・梅田 / 中崎町', zoom: 15 },
-    horie: { lat: 34.6738, lng: 135.4945, label: '大阪・南船場 / 堀江', zoom: 15 },
-    kyoto: { lat: 35.0088, lng: 135.7652, label: '京都・烏丸御池 / 河原町', zoom: 15 },
-    kobe: { lat: 34.6881, lng: 135.1918, label: '神戸・旧居留地 / 元町', zoom: 15 }
+  const REGION_PRESETS = {
+    all: { lat: 34.702, lng: 135.502, zoom: 12 },
+    umeda: { lat: 34.7042, lng: 135.4992, zoom: 15 },
+    kitahama: { lat: 34.6898, lng: 135.5038, zoom: 15 },
+    shinsaibashi: { lat: 34.6708, lng: 135.4992, zoom: 15 },
+    tennoji: { lat: 34.6476, lng: 135.5145, zoom: 15 },
+    kyoto: { lat: 35.0048, lng: 135.7635, zoom: 14 },
+    kobe: { lat: 34.6902, lng: 135.1915, zoom: 15 },
+    hanshin: { lat: 34.7415, lng: 135.3485, zoom: 13 },
+    nara: { lat: 34.6838, lng: 135.8185, zoom: 14 }
   };
 
-  // --- Leaflet Map References ---
+  // --- Map Instances ---
   let map = null;
-  let userMarker = null;
-  let walkCircle = null;
-  let spotLayer = null;
-  let osmLiveLayer = null;
+  let originMarker = null;
+  let pinsLayer = null;
 
-  // --- DOM Elements ---
-  const el = {
-    toastContainer: document.getElementById('toast-container'),
-    kineticWord: document.getElementById('kinetic-rotating-word'),
-    waveText: document.querySelector('.kinetic-wave-text'),
-    areaCaption: document.getElementById('current-area-caption'),
+  // --- DOM References ---
+  const dom = {
+    mapEl: document.getElementById('nomaloft-map'),
+    explorerIsland: document.getElementById('explorer-island'),
+    kineticWord: document.getElementById('kinetic-word'),
+    mascotEyes: document.getElementById('mascot-eyes'),
+    totalSpotsPill: document.getElementById('total-spots-pill'),
+    listResultCount: document.getElementById('list-result-count'),
+    hudPowerPct: document.getElementById('hud-power-pct'),
+    hudWifiPct: document.getElementById('hud-wifi-pct'),
+    hudRingPower: document.getElementById('hud-ring-power'),
+    hudRingWifi: document.getElementById('hud-ring-wifi'),
     searchInput: document.getElementById('search-input'),
-    clearSearchBtn: document.getElementById('clear-search-btn'),
-    acDropdown: document.getElementById('autocomplete-dropdown'),
-    acList: document.getElementById('autocomplete-list'),
-    acCount: document.getElementById('ac-count'),
-    locateMeBtn: document.getElementById('locate-me-btn'),
-    statWifi: document.getElementById('stat-avg-wifi'),
-    statWifiLabel: document.getElementById('stat-avg-wifi-label'),
-    statPower: document.getElementById('stat-avg-power'),
-    statSeats: document.getElementById('stat-open-seats'),
-    ringWifi: document.getElementById('ring-wifi'),
-    ringPower: document.getElementById('ring-power'),
-    ringSeats: document.getElementById('ring-seats'),
-    hudSparkBars: document.getElementById('hud-spark-bars'),
-    skeletonList: document.getElementById('skeleton-list'),
-    cardsList: document.getElementById('spots-cards-list'),
-    spotCountNum: document.getElementById('spot-count-num'),
-    scrollContainer: document.getElementById('spot-scroll-container'),
-    ptrIndicator: document.getElementById('ptr-indicator'),
-    ptrText: document.getElementById('ptr-text'),
-    ptrDripperSvg: document.getElementById('ptr-dripper-svg'),
-    savedBadge: document.getElementById('saved-count-badge'),
-    beanPoints: document.getElementById('bean-points'),
-    coordsReadout: document.getElementById('coords-readout'),
-    mapContainer: document.getElementById('nomaloft-map'),
-    bsBackdrop: document.getElementById('bottom-sheet-backdrop'),
+    clearQBtn: document.getElementById('clear-q-btn'),
+    acPanel: document.getElementById('ac-panel'),
+    acList: document.getElementById('ac-list'),
+    togglePowerBtn: document.getElementById('toggle-power-btn'),
+    toggleWifiBtn: document.getElementById('toggle-wifi-btn'),
+    savedOnlyBtn: document.getElementById('saved-only-btn'),
+    savedCount: document.getElementById('saved-count'),
+    sortSelect: document.getElementById('sort-select'),
+    ptrBar: document.getElementById('ptr-bar'),
+    ptrLabel: document.getElementById('ptr-label'),
+    cardsScroller: document.getElementById('cards-scroller'),
+    skeletonWrap: document.getElementById('skeleton-wrap'),
+    cardsList: document.getElementById('cards-list'),
     bottomSheet: document.getElementById('spot-bottom-sheet'),
-    bsDragHandle: document.getElementById('bs-drag-handle'),
-    bsCodeLabel: document.getElementById('bs-code-label'),
-    bsContent: document.getElementById('bs-content'),
+    bsHandle: document.getElementById('bs-handle'),
+    bsAreaTag: document.getElementById('bs-area-tag'),
+    bsSizeBtn: document.getElementById('bs-size-btn'),
     bsCloseBtn: document.getElementById('bs-close-btn'),
-    bsExpandBtn: document.getElementById('bs-expand-btn'),
-    sortSelect: document.getElementById('sort-select')
+    bsBody: document.getElementById('bs-body'),
+    toastStack: document.getElementById('toast-stack'),
+    osmExpandBtn: document.getElementById('osm-expand-btn'),
+    osmBtnLabel: document.getElementById('osm-btn-label')
   };
 
-  // =========================================================
-  // 1. KINETIC TYPOGRAPHY (Editorial Split-Flap + Hover Wave)
-  // =========================================================
-  const kineticPhrases = [
-    { text: '全席コンセントの', tint: 'rgba(234, 210, 150, 0.55)' },
-    { text: '土佐堀川と鴨川の', tint: 'rgba(188, 212, 192, 0.52)' },
-    { text: '防音ブース完備の', tint: 'rgba(232, 196, 182, 0.52)' },
-    { text: '町家と長屋ロフトの', tint: 'rgba(224, 210, 190, 0.65)' },
-    { text: '実測300Mbps超の', tint: 'rgba(234, 210, 150, 0.55)' }
-  ];
-  let kineticIndex = 0;
+  // --- Utility: Haversine Distance ---
+  function calcMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
+    const rad = (d) => (d * Math.PI) / 180;
+    const dLat = rad(lat2 - lat1);
+    const dLng = rad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
 
-  function setKineticPhrase(str) {
-    if (!el.kineticWord) return;
-    el.kineticWord.innerHTML = '';
-    Array.from(str).forEach((ch, i) => {
-      const s = document.createElement('span');
-      s.className = 'kinetic-char';
-      s.style.animationDelay = `${i * 32}ms`;
-      s.textContent = ch;
-      el.kineticWord.appendChild(s);
+  function formatDist(m) {
+    return m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${m}m`;
+  }
+
+  // =========================================================================
+  // 1. KINETIC TYPOGRAPHY + EYE-TRACKING CUP MICRO-INTERACTION
+  // =========================================================================
+  const kineticWords = ['コンセント有無', '無料Wi-Fi有無', '公式サイト・SNS', '全席電源デスク'];
+  let kIdx = 0;
+
+  function renderKineticWord(text) {
+    if (!dom.kineticWord) return;
+    dom.kineticWord.innerHTML = '';
+    Array.from(text).forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'k-letter';
+      span.style.animationDelay = `${i * 28}ms`;
+      span.textContent = ch;
+      dom.kineticWord.appendChild(span);
     });
   }
 
-  function initKineticTypography() {
-    if (el.waveText) {
-      const raw = el.waveText.textContent || '';
-      el.waveText.innerHTML = Array.from(raw)
-        .map((ch, idx) => `<span class="kinetic-wave-char" style="animation-delay:${idx * 38}ms">${ch}</span>`)
-        .join('');
-    }
-    setKineticPhrase(kineticPhrases[0].text);
-
+  function initKineticAndMascot() {
+    renderKineticWord(kineticWords[0]);
     setInterval(() => {
-      if (!el.kineticWord) return;
-      el.kineticWord.querySelectorAll('.kinetic-char').forEach((node, i) => {
-        node.style.animationDelay = `${i * 15}ms`;
-        node.classList.add('char-leave');
+      if (!dom.kineticWord) return;
+      dom.kineticWord.querySelectorAll('.k-letter').forEach((el, i) => {
+        el.style.animationDelay = `${i * 14}ms`;
+        el.classList.add('k-out');
       });
-
       setTimeout(() => {
-        kineticIndex = (kineticIndex + 1) % kineticPhrases.length;
-        const next = kineticPhrases[kineticIndex];
-        const slot = el.kineticWord.closest('.kinetic-slot');
-        if (slot) slot.style.backgroundColor = next.tint;
-        setKineticPhrase(next.text);
-      }, 220);
-    }, 3600);
+        kIdx = (kIdx + 1) % kineticWords.length;
+        renderKineticWord(kineticWords[kIdx]);
+      }, 190);
+    }, 3400);
+
+    // Subtle Eye-Tracking Mascot Pupils
+    window.addEventListener('mousemove', (e) => {
+      if (!dom.mascotEyes) return;
+      const rect = dom.mascotEyes.getBoundingClientRect();
+      const dx = Math.max(-2.2, Math.min(2.2, (e.clientX - rect.left) / 140));
+      const dy = Math.max(-1.8, Math.min(1.8, (e.clientY - rect.top) / 140));
+      dom.mascotEyes.setAttribute('transform', `translate(${dx.toFixed(2)}, ${dy.toFixed(2)})`);
+    });
+
+    document.getElementById('mascot-cup-btn')?.addEventListener('click', (e) => {
+      burstParticles(e.clientX, e.clientY);
+      showToast({
+        title: `現在 ${getAllCombinedSpots().length}軒の関西カフェ・コワーキングを収録中`,
+        sub: '右上の「+ 周辺の街カフェも読込」でさらに実在店を追加できます'
+      });
+    });
   }
 
-  // =========================================================
-  // 2. TOAST NOTIFICATION & CUSTOM VECTOR CONFETTI
-  // =========================================================
-  function showToast({ iconSvg = SVG.cup, title, message = '', actionLabel = '', onAction = null, accent = 'sumi', duration = 3600 }) {
-    if (!el.toastContainer) return;
+  // =========================================================================
+  // 2. TOAST NOTIFICATION + VECTOR SPARKLE BURST
+  // =========================================================================
+  function showToast({ title, sub = '', undoLabel = '', onUndo = null, duration = 3200 }) {
+    if (!dom.toastStack) return;
+    const item = document.createElement('div');
+    item.className =
+      'toast-pill glass-island-solid rounded-2xl px-4 py-2.5 flex items-center gap-3 text-xs shadow-xl relative overflow-hidden';
 
-    const borderAccent =
-      accent === 'roast' ? 'border-l-4 border-l-roast-500' : accent === 'moss' ? 'border-l-4 border-l-moss-500' : 'border-l-4 border-l-brass-500';
-
-    const node = document.createElement('div');
-    node.className = `craft-toast bg-washi-50/98 backdrop-blur-md border border-sumi-900 ${borderAccent} rounded-xl p-3 shadow-[0_8px_24px_rgba(34,27,23,0.16)] flex items-start gap-2.5 relative overflow-hidden`;
-
-    node.innerHTML = `
-      <div class="w-7 h-7 rounded-lg bg-washi-200/80 border border-sumi-900/20 flex items-center justify-center text-sumi-900 shrink-0 mt-0.5">
-        ${iconSvg}
+    item.innerHTML = `
+      <span class="w-2 h-2 rounded-full bg-caramel-500 shrink-0"></span>
+      <div class="min-w-0 flex-1">
+        <div class="font-bold text-moka-900 truncate">${title}</div>
+        ${sub ? `<div class="text-[11px] text-moka-500 truncate">${sub}</div>` : ''}
       </div>
-      <div class="flex-1 min-w-0 pr-1">
-        <div class="text-xs font-bold text-sumi-900 leading-snug">${title}</div>
-        ${message ? `<p class="text-[11px] text-sumi-600 mt-0.5 leading-relaxed">${message}</p>` : ''}
-        ${
-          actionLabel
-            ? `<button type="button" class="toast-undo-btn mt-1.5 px-2.5 py-0.5 rounded bg-sumi-900 text-washi-50 font-mono text-[10px] font-bold hover:bg-roast-500 transition-colors">${actionLabel}</button>`
-            : ''
-        }
-      </div>
-      <button type="button" class="toast-dismiss text-sumi-600 hover:text-sumi-900 p-0.5" aria-label="閉じる">
-        <svg viewBox="0 0 14 14" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l8 8M11 3l-8 8"/></svg>
-      </button>
-      <div class="toast-progress absolute bottom-0 left-0 h-[2px] bg-sumi-900/40 transition-all ease-linear" style="width:100%; transition-duration:${duration}ms"></div>
+      ${
+        undoLabel
+          ? `<button type="button" class="toast-undo shrink-0 px-2.5 py-1 rounded-lg bg-moka-900 text-cream-50 text-[10px] font-bold hover:bg-caramel-500 transition-colors">${undoLabel}</button>`
+          : ''
+      }
+      <div class="toast-bar absolute bottom-0 left-0 h-[2px] bg-caramel-500/60 transition-all ease-linear" style="width:100%; transition-duration:${duration}ms"></div>
     `;
 
-    el.toastContainer.appendChild(node);
+    dom.toastStack.appendChild(item);
     requestAnimationFrame(() => {
-      const bar = node.querySelector('.toast-progress');
-      if (bar) bar.style.width = '0%';
+      const b = item.querySelector('.toast-bar');
+      if (b) b.style.width = '0%';
     });
 
-    const close = () => {
-      if (!node.isConnected) return;
-      node.classList.add('toast-out');
-      setTimeout(() => node.remove(), 230);
+    const dismiss = () => {
+      if (!item.isConnected) return;
+      item.classList.add('leaving');
+      setTimeout(() => item.remove(), 200);
     };
 
-    const timer = setTimeout(close, duration);
-    node.querySelector('.toast-dismiss')?.addEventListener('click', () => {
-      clearTimeout(timer);
-      close();
-    });
-
-    if (actionLabel && typeof onAction === 'function') {
-      node.querySelector('.toast-undo-btn')?.addEventListener('click', () => {
-        clearTimeout(timer);
-        onAction();
-        close();
+    const t = setTimeout(dismiss, duration);
+    if (undoLabel && typeof onUndo === 'function') {
+      item.querySelector('.toast-undo')?.addEventListener('click', () => {
+        clearTimeout(t);
+        onUndo();
+        dismiss();
       });
     }
   }
 
-  // Vector Confetti (Zero Emojis — Pure SVG Beans, Stars, Leaves)
-  function spawnVectorParticles(x, y) {
-    const shapes = [SVG.beanParticle, SVG.starParticle, SVG.leafParticle];
-    for (let i = 0; i < 8; i++) {
-      const wrap = document.createElement('div');
-      wrap.className = 'svg-particle';
-      wrap.innerHTML = shapes[i % shapes.length];
-      const angle = (Math.PI * 2 * i) / 8 + (Math.random() - 0.5) * 0.35;
-      const dist = 36 + Math.random() * 44;
-      wrap.style.left = `${x - 7}px`;
-      wrap.style.top = `${y - 7}px`;
-      wrap.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
-      wrap.style.setProperty('--dy', `${Math.sin(angle) * dist - 18}px`);
-      wrap.style.setProperty('--dr', `${(Math.random() - 0.5) * 110}deg`);
-      document.body.appendChild(wrap);
-      setTimeout(() => wrap.remove(), 900);
+  function burstParticles(x, y) {
+    for (let i = 0; i < 7; i++) {
+      const p = document.createElement('div');
+      p.className = 'v-spark';
+      p.innerHTML = i % 2 === 0 ? ICONS.bean : ICONS.spark;
+      const ang = (Math.PI * 2 * i) / 7;
+      const r = 28 + Math.random() * 34;
+      p.style.left = `${x - 6}px`;
+      p.style.top = `${y - 6}px`;
+      p.style.setProperty('--tx', `${Math.cos(ang) * r}px`);
+      p.style.setProperty('--ty', `${Math.sin(ang) * r - 12}px`);
+      p.style.setProperty('--tr', `${(Math.random() - 0.5) * 90}deg`);
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 820);
     }
   }
 
-  // =========================================================
-  // 3. INFOGRAPHIC ANIMATION (Radial Arcs, Sparkbars, Pentagon Radar)
-  // =========================================================
-  function animateNumber(targetEl, toVal, duration = 750) {
-    if (!targetEl) return;
-    const fromVal = parseInt(targetEl.textContent || '0', 10) || 0;
-    const start = performance.now();
-    function frame(now) {
-      const p = Math.min(1, (now - start) / duration);
-      const ease = 1 - Math.pow(1 - p, 3);
-      targetEl.textContent = String(Math.round(fromVal + (toVal - fromVal) * ease));
-      if (p < 1) requestAnimationFrame(frame);
+  // =========================================================================
+  // 3. INFOGRAPHIC RINGS & COUNTERS
+  // =========================================================================
+  function animateInt(el, target, ms = 600) {
+    if (!el) return;
+    const from = parseInt(el.textContent || '0', 10) || 0;
+    const t0 = performance.now();
+    function step(now) {
+      const p = Math.min(1, (now - t0) / ms);
+      const ease = 1 - (1 - p) ** 3;
+      el.textContent = String(Math.round(from + (target - from) * ease));
+      if (p < 1) requestAnimationFrame(step);
     }
-    requestAnimationFrame(frame);
+    requestAnimationFrame(step);
   }
 
-  function setArcProgress(circleEl, pct) {
+  function setSmallRing(circleEl, pct) {
     if (!circleEl) return;
-    const circum = 2 * Math.PI * 17.5; // ~109.95
-    const clamped = Math.max(0, Math.min(100, pct));
-    circleEl.style.strokeDashoffset = String(circum * (1 - clamped / 100));
+    const c = 2 * Math.PI * 12; // ~75.4
+    circleEl.style.strokeDashoffset = String(c * (1 - Math.max(0, Math.min(100, pct)) / 100));
   }
 
-  function updateHudInfographics(summary) {
-    if (!summary) return;
-    animateNumber(el.statWifi, summary.avgWifi);
-    animateNumber(el.statWifiLabel, summary.avgWifi);
-    animateNumber(el.statPower, summary.avgPower);
-    animateNumber(el.statSeats, summary.totalOpenSeats);
+  function refreshTopInfographic(filteredList) {
+    const total = filteredList.length;
+    const pCount = filteredList.filter((s) => s.power === 'yes_all' || s.power === 'yes_part').length;
+    const wCount = filteredList.filter((s) => s.wifi === 'yes_free' || s.wifi === 'yes_reg').length;
+    const pPct = total ? Math.round((pCount / total) * 100) : 0;
+    const wPct = total ? Math.round((wCount / total) * 100) : 0;
 
-    setArcProgress(el.ringWifi, Math.min(100, (summary.avgWifi / 550) * 100));
-    setArcProgress(el.ringPower, summary.avgPower);
-    setArcProgress(el.ringSeats, Math.min(100, (summary.totalOpenSeats / 115) * 100));
+    animateInt(dom.hudPowerPct, pPct);
+    animateInt(dom.hudWifiPct, wPct);
+    setSmallRing(dom.hudRingPower, pPct);
+    setSmallRing(dom.hudRingWifi, wPct);
+
+    const allTotal = getAllCombinedSpots().length;
+    if (dom.totalSpotsPill) dom.totalSpotsPill.textContent = `${allTotal}軒`;
+    if (dom.listResultCount) dom.listResultCount.textContent = String(total);
   }
 
-  function initHudSparkBars() {
-    if (!el.hudSparkBars) return;
-    const curve = [68, 52, 38, 74, 56, 66, 82]; // openness %
-    el.hudSparkBars.innerHTML = curve
-      .map(
-        (v, idx) => `
-      <div class="w-2 h-7 bg-washi-200 rounded-sm flex items-end overflow-hidden" title="${8 + idx * 2}:00 空席ゆとり ${v}%">
-        <div class="spark-bar w-full ${idx === 3 ? 'bg-moss-500' : 'bg-sumi-700'}" data-h="${v}%" style="height:0%"></div>
-      </div>
-    `
-      )
-      .join('');
-
-    setTimeout(() => {
-      el.hudSparkBars.querySelectorAll('.spark-bar').forEach((b, i) => {
-        setTimeout(() => {
-          b.style.height = b.getAttribute('data-h') || '50%';
-        }, i * 65);
-      });
-    }, 180);
-  }
-
-  // Generate SVG Pentagon Radar Chart for Bottom Sheet Infographic
-  function buildPentagonRadarSVG(spot) {
-    const metrics = [
-      { label: 'Wi-Fi', val: spot.wifiStability },
-      { label: '電源率', val: spot.outletRatio },
-      { label: '静寂性', val: spot.quietness },
-      { label: '椅子快適', val: spot.chairComfort },
-      { label: '珈琲品質', val: spot.coffeeScore }
-    ];
-    const cx = 95;
-    const cy = 92;
-    const maxR = 60;
-
-    const pointAt = (idx, pct) => {
-      const angle = -Math.PI / 2 + (idx * 2 * Math.PI) / 5;
-      const r = (pct / 100) * maxR;
-      return `${(cx + Math.cos(angle) * r).toFixed(1)},${(cy + Math.sin(angle) * r).toFixed(1)}`;
-    };
-
-    const gridRings = [35, 70, 100]
-      .map((g) => {
-        const pts = [0, 1, 2, 3, 4].map((i) => pointAt(i, g)).join(' ');
-        return `<polygon points="${pts}" fill="none" stroke="#DCD0BC" stroke-width="1"/>`;
-      })
-      .join('');
-
-    const axes = [0, 1, 2, 3, 4]
-      .map((i) => `<line x1="${cx}" y1="${cy}" x2="${pointAt(i, 100).split(',')[0]}" y2="${pointAt(i, 100).split(',')[1]}" stroke="#DCD0BC" stroke-width="1"/>`)
-      .join('');
-
-    const zeroPoly = [0, 1, 2, 3, 4].map(() => `${cx},${cy}`).join(' ');
-    const targetPoly = metrics.map((m, i) => pointAt(i, m.val)).join(' ');
-
-    const labels = metrics
-      .map((m, i) => {
-        const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
-        const lx = cx + Math.cos(angle) * (maxR + 20);
-        const ly = cy + Math.sin(angle) * (maxR + 16);
-        return `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="700" fill="#352C26">${m.label}</text>`;
-      })
-      .join('');
-
-    return `
-      <svg viewBox="0 0 190 182" class="w-full max-w-[205px] mx-auto overflow-visible">
-        ${gridRings}
-        ${axes}
-        <polygon id="bs-radar-poly" points="${zeroPoly}" data-target-points="${targetPoly}" fill="rgba(192, 96, 68, 0.24)" stroke="#C06044" stroke-width="2" class="radar-polygon"/>
-        ${labels}
-      </svg>
-    `;
-  }
-
-  // =========================================================
-  // 4. FREE OPENSTREETMAP + OVERPASS REAL CAFE LAYER
-  // =========================================================
+  // =========================================================================
+  // 4. FREE OPENSTREETMAP + LIVE OVERPASS STREET-CAFE ENGINE
+  // =========================================================================
   function initMap() {
     if (typeof L === 'undefined') return;
-
     map = L.map('nomaloft-map', {
       zoomControl: false,
       attributionControl: false
-    }).setView([state.lat, state.lng], 15);
+    }).setView([state.lat, state.lng], 13);
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // 100% Free Official OpenStreetMap Standard Tile Server (No API Key Required)
+    // 100% Free Official OpenStreetMap Standard Tile Layer
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       crossOrigin: true
     }).addTo(map);
 
-    spotLayer = L.layerGroup().addTo(map);
-    osmLiveLayer = L.layerGroup().addTo(map);
-
-    map.on('moveend', () => {
-      if (!map || !el.coordsReadout) return;
-      const c = map.getCenter();
-      el.coordsReadout.textContent = `${c.lat.toFixed(4)}N, ${c.lng.toFixed(4)}E`;
-    });
-
-    renderOriginBeacon();
+    pinsLayer = L.layerGroup().addTo(map);
+    drawOriginMarker();
   }
 
-  function renderOriginBeacon() {
+  function drawOriginMarker() {
     if (!map) return;
-    if (userMarker) map.removeLayer(userMarker);
-    if (walkCircle) map.removeLayer(walkCircle);
-
-    const beaconIcon = L.divIcon({
-      className: 'origin-beacon-wrapper',
-      html: `<div class="gps-beacon" title="基準現在地"><div class="gps-beacon-ring"></div><div class="gps-beacon-core"></div></div>`,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+    if (originMarker) map.removeLayer(originMarker);
+    const icon = L.divIcon({
+      className: 'origin-marker',
+      html: `<div class="origin-dot-wrap" title="基準地点"><div class="origin-pulse"></div><div class="origin-core"></div></div>`,
+      iconSize: [22, 22],
+      iconAnchor: [11, 11]
     });
-
-    userMarker = L.marker([state.lat, state.lng], { icon: beaconIcon, zIndexOffset: 900 }).addTo(map);
-
-    if (state.walkRingVisible) {
-      walkCircle = L.circle([state.lat, state.lng], {
-        radius: 650,
-        color: '#C06044',
-        weight: 1.4,
-        dashArray: '5 5',
-        fillColor: '#EAD296',
-        fillOpacity: 0.1
-      }).addTo(map);
-    }
+    originMarker = L.marker([state.lat, state.lng], { icon, zIndexOffset: 900 }).addTo(map);
   }
 
-  function renderMapPins(visibleSpots) {
-    if (!map || !spotLayer) return;
-    spotLayer.clearLayers();
+  // Fetch real Kansai cafes & coworking spaces from OpenStreetMap Overpass API directly in browser
+  async function loadOsmCafesAround(lat, lng, radiusMeters = 1800, silent = false) {
+    // Avoid re-fetching very close center
+    const already = state.osmLoadedCenters.some((c) => calcMeters(c.lat, c.lng, lat, lng) < 700);
+    if (already && silent) return;
 
-    visibleSpots.forEach((spot) => {
-      const isCowork = spot.category === 'coworking';
-      const isActive = spot.id === state.selectedSpotId;
+    if (dom.osmBtnLabel) dom.osmBtnLabel.textContent = '周辺カフェ取得中...';
 
-      const pinIcon = L.divIcon({
-        className: 'noma-craft-marker',
-        html: `
-          <div class="craft-pin ${isCowork ? 'craft-pin-cowork' : 'craft-pin-cafe'} ${isActive ? 'is-active' : ''}" data-pin-id="${spot.id}">
-            <div class="craft-pin-body">
-              <span class="craft-pin-dot"></span>
-              <span class="font-mono text-[10px] font-bold">${spot.wifiMbps}M</span>
-              <span class="text-[10px] font-bold opacity-80">空${spot.seatsAvailable}</span>
-            </div>
-            <div class="craft-pin-stem"></div>
-          </div>
-        `,
-        iconSize: [108, 34],
-        iconAnchor: [54, 32]
-      });
+    const query = `[out:json][timeout:8];(node["amenity"="cafe"](around:${radiusMeters},${lat},${lng});node["amenity"="coworking_space"](around:${radiusMeters},${lat},${lng}););out body 75;`;
 
-      const m = L.marker([spot.lat, spot.lng], { icon: pinIcon }).addTo(spotLayer);
-      m.on('click', () => {
-        selectSpot(spot.id, { openSheet: true, fly: true });
-      });
-    });
-  }
-
-  async function toggleOsmLiveCafes() {
-    const btn = document.getElementById('osm-live-btn');
-    const label = document.getElementById('osm-live-label');
-    if (!map || !osmLiveLayer) return;
-
-    if (state.osmLiveActive) {
-      state.osmLiveActive = false;
-      osmLiveLayer.clearLayers();
-      btn?.classList.remove('bg-sumi-900', 'text-washi-50');
-      if (label) label.textContent = 'OSM周辺カフェ重畳';
-      showToast({ iconSvg: SVG.pin, title: 'OpenStreetMap実在ピン重畳をオフにしました' });
-      return;
-    }
-
-    if (label) label.textContent = 'OSM取得中...';
     try {
-      const center = map.getCenter();
-      let nodes = [];
+      const res = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `data=${encodeURIComponent(query)}`
+      });
+      if (!res.ok) throw new Error('overpass_busy');
+      const json = await res.json();
 
-      // Try browser-direct free OpenStreetMap Overpass API first (CORS enabled, zero API key)
-      const q = `[out:json][timeout:6];(node["amenity"="cafe"](around:900,${center.lat},${center.lng});node["amenity"="coworking_space"](around:900,${center.lat},${center.lng}););out body 18;`;
-      try {
-        const directRes = await fetch('https://overpass-api.de/api/interpreter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `data=${encodeURIComponent(q)}`
+      const existingIds = new Set(state.osmSpots.map((s) => s.id));
+      const verifiedCoords = state.verifiedSpots.map((s) => ({ lat: s.lat, lng: s.lng }));
+
+      let added = 0;
+      (json.elements || []).forEach((el) => {
+        const tags = el.tags || {};
+        const rawName = tags['name:ja'] || tags.name;
+        if (!rawName) return;
+
+        // Skip if within 45m of an already verified spot to prevent duplicate pin overlap
+        const nearVerified = verifiedCoords.some((v) => calcMeters(v.lat, v.lng, el.lat, el.lon) < 45);
+        if (nearVerified) return;
+
+        const id = `osm-${el.id}`;
+        if (existingIds.has(id)) return;
+
+        // Parse OSM power / wifi / official / SNS tags
+        const hasSocket =
+          tags.socket === 'yes' ||
+          tags['socket:type_a'] ||
+          tags['socket:usb'] ||
+          tags.power_supply === 'yes';
+        const noSocket = tags.socket === 'no';
+        const power = hasSocket ? 'yes_part' : noSocket ? 'no' : 'unknown';
+        const powerDetail = hasSocket
+          ? 'あり（OpenStreetMap登録情報）'
+          : noSocket
+          ? 'なし（OSM情報）'
+          : '情報未登録（公式サイト・SNSで要確認）';
+
+        const wlan =
+          tags.internet_access === 'wlan' ||
+          tags.internet_access === 'yes' ||
+          tags.wifi === 'yes' ||
+          tags.wifi === 'free';
+        const noWlan = tags.internet_access === 'no' || tags.wifi === 'no';
+        const wifi = wlan ? 'yes_free' : noWlan ? 'no' : 'unknown';
+        const wifiDetail = wlan
+          ? 'あり（OpenStreetMap Wi-Fi登録済）'
+          : noWlan
+          ? 'なし（OSM情報）'
+          : '情報未登録（公式サイト・SNSで要確認）';
+
+        const website = tags.website || tags['contact:website'] || '';
+        const igRaw = tags['contact:instagram'] || tags.instagram || '';
+        const igUrl = igRaw
+          ? igRaw.startsWith('http')
+            ? igRaw
+            : `https://www.instagram.com/${igRaw.replace(/^@/, '')}/`
+          : `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(rawName)}`;
+
+        const xRaw = tags['contact:twitter'] || tags.twitter || '';
+        const xUrl = xRaw
+          ? xRaw.startsWith('http')
+            ? xRaw
+            : `https://x.com/${xRaw.replace(/^@/, '')}`
+          : `https://x.com/search?q=${encodeURIComponent(rawName + ' カフェ')}`;
+
+        const officialUrl =
+          website || `https://www.google.com/search?q=${encodeURIComponent(rawName + ' 公式 カフェ')}`;
+
+        state.osmSpots.push({
+          id,
+          name: rawName,
+          areaId: state.region === 'all' ? 'kitahama' : state.region,
+          areaLabel: tags['addr:ward'] || tags['addr:city'] || '関西エリア（OSM実在店舗）',
+          station: tags['addr:suburb'] || 'マップ座標登録スポット',
+          walkMin: 5,
+          lat: el.lat,
+          lng: el.lon,
+          category: tags.amenity === 'coworking_space' ? 'coworking' : 'cafe',
+          categoryLabel: tags.amenity === 'coworking_space' ? 'コワーキング（OSM）' : '街カフェ（OSM）',
+          power,
+          powerDetail,
+          wifi,
+          wifiDetail,
+          wifiSpeedEst: wlan ? 150 : 90,
+          quietScore: 78,
+          deskScore: 78,
+          openHours: tags.opening_hours || '公式・SNSにて確認',
+          priceHint: tags.brand ? `${tags.brand}` : '実在カフェ',
+          officialUrl,
+          instagramUrl: igUrl,
+          instagramHandle: igRaw ? `@${igRaw.replace(/^@/, '')}` : 'Instagram検索',
+          xUrl,
+          note: website
+            ? 'OpenStreetMapに登録されている実在店舗です。公式サイト・SNSから最新情報を確認できます。'
+            : 'OpenStreetMapに登録されている実在カフェです。ボタンから公式情報・SNS投稿を検索できます。',
+          source: 'osm'
         });
-        if (directRes.ok) {
-          const oj = await directRes.json();
-          nodes = (oj.elements || [])
-            .filter((el) => el.tags && (el.tags['name:ja'] || el.tags.name))
-            .slice(0, 16)
-            .map((el) => ({
-              id: `osm-${el.id}`,
-              name: el.tags['name:ja'] || el.tags.name || 'Cafe',
-              lat: el.lat,
-              lng: el.lon,
-              openingHours: el.tags.opening_hours || '営業時間情報なし'
-            }));
+        existingIds.add(id);
+        added += 1;
+      });
+
+      state.osmLoadedCenters.push({ lat, lng });
+      if (dom.osmBtnLabel) dom.osmBtnLabel.textContent = `+ 街カフェ追加 (${state.osmSpots.length}軒読込済)`;
+
+      applyClientFiltersAndRender();
+
+      if (!silent) {
+        showToast({
+          title:
+            added > 0
+              ? `周辺の街カフェ ${added}軒を追加しました（合計 ${getAllCombinedSpots().length}軒）`
+              : 'この周辺の実在カフェはすべて表示済みです',
+          sub: '地図を動かして再度押すと別エリアも読み込めます'
+        });
+      }
+    } catch (_) {
+      if (dom.osmBtnLabel) dom.osmBtnLabel.textContent = '+ 周辺の街カフェも読込';
+      if (!silent) {
+        showToast({ title: 'OpenStreetMapが一時混雑しています。少し待ってお試しください' });
+      }
+    }
+  }
+
+  // =========================================================================
+  // 5. UNIFIED FILTERING, SORTING, SKELETON & RENDERING
+  // =========================================================================
+  function getAllCombinedSpots() {
+    const merged = [...state.verifiedSpots, ...state.osmSpots];
+    return merged.map((s) => {
+      const distanceMeters = calcMeters(state.lat, state.lng, s.lat, s.lng);
+      const pScore = s.power === 'yes_all' ? 100 : s.power === 'yes_part' ? 80 : s.power === 'unknown' ? 45 : 20;
+      const wScore = s.wifi === 'yes_free' ? 95 : s.wifi === 'yes_reg' ? 75 : s.wifi === 'unknown' ? 45 : 15;
+      const workIndex = Math.round(pScore * 0.32 + wScore * 0.32 + (s.deskScore || 80) * 0.2 + (s.quietScore || 80) * 0.16);
+      return {
+        ...s,
+        distanceMeters,
+        workIndex
+      };
+    });
+  }
+
+  function getFilteredSpots() {
+    let list = getAllCombinedSpots();
+
+    if (state.savedOnly) {
+      list = list.filter((s) => state.savedIds.has(s.id));
+    } else if (state.region !== 'all') {
+      const preset = REGION_PRESETS[state.region];
+      list = list.filter((s) => {
+        if (s.areaId === state.region) return true;
+        if (s.source === 'osm' && preset) {
+          return calcMeters(preset.lat, preset.lng, s.lat, s.lng) <= 5500;
         }
-      } catch (_) {}
-
-      // Fallback to Hono edge proxy if needed
-      if (!nodes.length) {
-        const res = await fetch(`/api/osm-nearby?lat=${center.lat}&lng=${center.lng}&radius=950`);
-        const data = await res.json();
-        nodes = data.osmNodes || [];
-      }
-
-      osmLiveLayer.clearLayers();
-      nodes.forEach((n) => {
-        const icon = L.divIcon({
-          className: 'osm-node-pin',
-          html: `<div class="osm-live-pin"><span class="w-1.5 h-1.5 rounded-full bg-moss-500"></span><span>${n.name.slice(0, 12)}</span></div>`,
-          iconSize: [110, 24],
-          iconAnchor: [55, 12]
-        });
-        const marker = L.marker([n.lat, n.lng], { icon }).addTo(osmLiveLayer);
-        marker.on('click', () => {
-          showToast({
-            iconSvg: SVG.cup,
-            title: `OSM実在スポット: ${n.name}`,
-            message: `OpenStreetMap登録データ / ${n.openingHours}`,
-            accent: 'moss'
-          });
-        });
+        return false;
       });
-
-      state.osmLiveActive = true;
-      btn?.classList.add('bg-sumi-900', 'text-washi-50');
-      if (label) label.textContent = `OSM重畳中 (${nodes.length})`;
-      showToast({
-        iconSvg: SVG.pin,
-        title: `OpenStreetMapから周辺のカフェ ${nodes.length}件を取得しました`,
-        message: '緑破線のサブピンがOSMライブ登録店舗です',
-        accent: 'moss'
-      });
-    } catch (_) {
-      if (label) label.textContent = 'OSM周辺カフェ重畳';
-      showToast({ iconSvg: SVG.pin, title: 'OSMサーバーが一時混雑しています', accent: 'roast' });
     }
+
+    if (state.category === 'coworking') {
+      list = list.filter((s) => s.category === 'coworking');
+    } else if (state.category === 'cafe') {
+      list = list.filter((s) => s.category !== 'coworking');
+    }
+
+    if (state.powerOnly) {
+      list = list.filter((s) => s.power === 'yes_all' || s.power === 'yes_part');
+    }
+
+    if (state.wifiOnly) {
+      list = list.filter((s) => s.wifi === 'yes_free' || s.wifi === 'yes_reg');
+    }
+
+    if (state.query) {
+      const q = state.query.toLowerCase();
+      list = list.filter((s) =>
+        `${s.name} ${s.areaLabel} ${s.station} ${s.categoryLabel} ${s.powerDetail} ${s.wifiDetail} ${s.note}`
+          .toLowerCase()
+          .includes(q)
+      );
+    }
+
+    if (state.sort === 'distance') {
+      list.sort((a, b) => a.distanceMeters - b.distanceMeters);
+    } else if (state.sort === 'score') {
+      list.sort((a, b) => b.workIndex - a.workIndex);
+    } else if (state.sort === 'speed') {
+      list.sort((a, b) => (b.wifiSpeedEst || 0) - (a.wifiSpeedEst || 0));
+    }
+
+    return list;
   }
 
-  // =========================================================
-  // 5. SKELETON SCREEN + FETCH SPOTS + SWIPE CARDS
-  // =========================================================
-  function setSkeleton(visible) {
-    if (!el.skeletonList || !el.cardsList) return;
-    el.skeletonList.classList.toggle('hidden', !visible);
-    el.cardsList.classList.toggle('hidden', visible);
+  function showSkeleton(on) {
+    dom.skeletonWrap?.classList.toggle('hidden', !on);
+    dom.cardsList?.classList.toggle('hidden', on);
   }
 
-  async function loadSpots({ showSkeleton = true, minSkeletonMs = 360 } = {}) {
-    if (showSkeleton) setSkeleton(true);
-    const start = performance.now();
-
+  async function initialFetchSpots() {
+    showSkeleton(true);
     try {
-      const qs = new URLSearchParams({
-        lat: String(state.lat),
-        lng: String(state.lng),
-        category: state.category,
-        filter: state.filter,
-        q: state.query,
-        sort: state.sort,
-        jitter: String(state.jitterSeed)
-      });
-
-      const res = await fetch(`/api/spots?${qs.toString()}`);
+      const res = await fetch(`/api/spots?lat=${state.lat}&lng=${state.lng}`);
       const data = await res.json();
+      state.verifiedSpots = data.spots || [];
+      await new Promise((r) => setTimeout(r, 320));
+      applyClientFiltersAndRender();
+      showSkeleton(false);
 
-      const elapsed = performance.now() - start;
-      if (showSkeleton && elapsed < minSkeletonMs) {
-        await new Promise((r) => setTimeout(r, minSkeletonMs - elapsed));
-      }
-
-      state.spots = data.spots || [];
-      renderDeckAndMap(data.summary);
-      setSkeleton(false);
+      // Automatically enrich Osaka Kitahama/Umeda surroundings silently from free OSM Overpass!
+      loadOsmCafesAround(state.lat, state.lng, 1600, true);
     } catch (_) {
-      setSkeleton(false);
-      showToast({ iconSvg: SVG.cup, title: 'データの取得に失敗しました', accent: 'roast' });
+      showSkeleton(false);
     }
   }
 
-  function getDisplayedSpots() {
-    if (state.savedOnlyMode) {
-      return state.spots.filter((s) => state.savedIds.has(s.id));
+  function applyClientFiltersAndRender() {
+    const filtered = getFilteredSpots();
+    refreshTopInfographic(filtered);
+    renderCards(filtered);
+    renderMapMarkers(filtered);
+  }
+
+  // Helper badges for Power & Wi-Fi (Crystal clear at a glance!)
+  function powerBadgeHTML(spot) {
+    if (spot.power === 'yes_all') {
+      return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#FFF1E8] text-[#B55428] border border-[#E2875A]/35 text-[11px] font-extrabold">${ICONS.plug}<span>コンセント: 全席あり</span></span>`;
     }
-    return state.spots;
+    if (spot.power === 'yes_part') {
+      return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#FFF6EE] text-[#CA6B3E] border border-[#E2875A]/25 text-[11px] font-bold">${ICONS.plug}<span>コンセント: あり</span></span>`;
+    }
+    if (spot.power === 'no') {
+      return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cream-200/70 text-moka-500 text-[11px] font-medium">${ICONS.off}<span>コンセント: なし</span></span>`;
+    }
+    return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cream-200/50 text-moka-500 text-[11px] font-medium">${ICONS.plug}<span>電源: 要確認</span></span>`;
   }
 
-  function renderDeckAndMap(summary) {
-    const list = getDisplayedSpots();
-    if (el.spotCountNum) el.spotCountNum.textContent = String(list.length);
-
-    renderSpotCards(list);
-    renderMapPins(list);
-    if (summary) updateHudInfographics(summary);
+  function wifiBadgeHTML(spot) {
+    if (spot.wifi === 'yes_free' || spot.wifi === 'yes_reg') {
+      return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#EEF7F0] text-[#366341] border border-[#6FA07A]/35 text-[11px] font-extrabold">${ICONS.wifi}<span>Wi-Fi: あり</span></span>`;
+    }
+    if (spot.wifi === 'no') {
+      return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cream-200/70 text-moka-500 text-[11px] font-medium">${ICONS.off}<span>Wi-Fi: なし</span></span>`;
+    }
+    return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-cream-200/50 text-moka-500 text-[11px] font-medium">${ICONS.wifi}<span>Wi-Fi: 要確認</span></span>`;
   }
 
-  function renderSpotCards(list) {
-    if (!el.cardsList) return;
+  function renderCards(list) {
+    if (!dom.cardsList) return;
 
     if (list.length === 0) {
-      el.cardsList.innerHTML = `
-        <div class="rounded-2xl border border-dashed border-sumi-900/30 bg-washi-50 p-6 text-center space-y-2.5">
-          <div class="w-9 h-9 rounded-full bg-washi-200 mx-auto flex items-center justify-center text-sumi-700">${SVG.cup}</div>
-          <p class="text-xs font-bold text-sumi-900">該当するワークスポットがありません</p>
-          <p class="text-[11px] text-sumi-600">検索条件またはエリアを変更してお試しください。</p>
-          <button id="empty-reset-btn" type="button" class="craft-btn px-3 py-1.5 rounded-lg bg-sumi-900 text-washi-50 text-[11px] font-bold">条件をすべて解除</button>
+      dom.cardsList.innerHTML = `
+        <div class="rounded-2xl bg-cream-50/90 p-6 text-center space-y-2.5 border border-moka-900/8">
+          <p class="text-xs font-bold text-moka-900">条件に一致するスポットがありません</p>
+          <button id="reset-filters-btn" type="button" class="px-3.5 py-1.5 rounded-xl bg-moka-900 text-cream-50 text-xs font-bold">絞り込みを解除</button>
         </div>
       `;
-      document.getElementById('empty-reset-btn')?.addEventListener('click', resetFilters);
+      document.getElementById('reset-filters-btn')?.addEventListener('click', resetAllFilters);
       return;
     }
 
-    el.cardsList.innerHTML = list
-      .map((spot, idx) => {
-        const isSaved = state.savedIds.has(spot.id);
-        const isSelected = spot.id === state.selectedSpotId;
-        const statusDot =
-          spot.crowdLevel <= 35 ? 'bg-moss-500' : spot.crowdLevel <= 58 ? 'bg-brass-500' : 'bg-roast-500';
-        const statusText =
-          spot.crowdLevel <= 35 ? `空席ゆとり (${spot.seatsAvailable}席)` : `残り ${spot.seatsAvailable}席`;
+    // Render top 90 in scrollable list for buttery 60fps DOM performance
+    const slice = list.slice(0, 95);
+
+    dom.cardsList.innerHTML = slice
+      .map((spot, i) => {
+        const saved = state.savedIds.has(spot.id);
+        const active = spot.id === state.selectedId;
+        const igHref =
+          spot.instagramUrl ||
+          `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(spot.name)}`;
+        const xHref =
+          spot.xUrl || `https://x.com/search?q=${encodeURIComponent(spot.name)}`;
 
         return `
-        <article class="swipe-card-shell card-stagger-in" style="animation-delay:${idx * 45}ms" data-spot-id="${spot.id}">
-          <!-- Swipe Action Reveal Background -->
-          <div class="swipe-reveal-layer swipe-reveal-bookmark" data-swipe-bg>
-            <span class="inline-flex items-center gap-1.5">${SVG.bookmarkFilled} BOOKMARK</span>
-            <span class="inline-flex items-center gap-1.5">CHECK-IN ${SVG.stamp}</span>
+        <article class="swipe-wrap card-pop" style="animation-delay:${Math.min(i * 22, 260)}ms" data-wrap-id="${spot.id}">
+          <div class="swipe-underlay mode-save" data-underlay>
+            <span class="inline-flex items-center gap-1.5">${ICONS.bookmarkFill} 保存切替</span>
+            <span class="inline-flex items-center gap-1.5">詳細・公式情報 ${ICONS.globe}</span>
           </div>
 
-          <!-- Foreground Index Card -->
-          <div class="spot-index-card p-3 ${isSelected ? 'is-selected' : ''}" data-card-fg="${spot.id}">
-            <div class="flex gap-3">
-              <!-- Architectural Vignette -->
-              <div class="relative w-24 h-20 rounded-xl overflow-hidden border border-sumi-900/20 bg-washi-200 shrink-0">
-                <img src="${spot.imageUrl}" alt="${spot.name}" loading="lazy" class="w-full h-full object-cover" />
-                <span class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-sumi-900/85 text-washi-50 font-mono text-[9px] font-bold">
-                  ${spot.walkMinFromHere}m歩 / ${spot.distanceMeters >= 1000 ? (spot.distanceMeters / 1000).toFixed(1) + 'km' : spot.distanceMeters + 'm'}
-                </span>
+          <div class="cafe-card p-3.5 ${active ? 'active-card' : ''}" data-card-id="${spot.id}">
+            <!-- Row 1: Category + Area + Distance + Bookmark -->
+            <div class="flex items-center justify-between gap-2 text-[10.5px] font-bold text-moka-500">
+              <div class="flex items-center gap-1.5 truncate">
+                <span class="px-2 py-0.5 rounded-md ${
+                  spot.category === 'coworking' ? 'bg-[#E6F3EA] text-[#366341]' : 'bg-cream-200/80 text-moka-800'
+                } font-extrabold shrink-0">${spot.categoryLabel}</span>
+                <span class="truncate">${spot.areaLabel}</span>
               </div>
-
-              <!-- Editorial Metadata -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between gap-1">
-                  <span class="font-mono text-[9px] tracking-wider uppercase text-sumi-600">${spot.code} · ${spot.categoryLabel}</span>
-                  <button
-                    type="button"
-                    data-bookmark-btn="${spot.id}"
-                    class="w-6 h-6 rounded-md flex items-center justify-center ${
-                      isSaved ? 'text-roast-500 bg-roast-400/15' : 'text-sumi-600 hover:bg-washi-200'
-                    } transition-colors shrink-0"
-                    aria-label="ブックマーク保存"
-                  >
-                    ${isSaved ? SVG.bookmarkFilled : SVG.bookmark}
-                  </button>
-                </div>
-
-                <h2 class="text-[13px] font-bold text-sumi-900 truncate mt-0.5">${spot.name}</h2>
-                <p class="text-[11px] text-sumi-600 truncate">${spot.station} 徒歩${spot.walkMinutes}分 · ${spot.priceRange}</p>
-                <p class="text-[11px] text-sumi-800 line-clamp-1 mt-1">${spot.catchcopy}</p>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span class="font-mono text-[10.5px] text-moka-700">${formatDist(spot.distanceMeters)}</span>
+                <button type="button" data-save-btn="${spot.id}" class="w-6 h-6 rounded-lg flex items-center justify-center ${
+                  saved ? 'text-caramel-500 bg-caramel-400/15' : 'text-moka-500 hover:bg-cream-200'
+                } transition-colors" aria-label="ブックマーク">
+                  ${saved ? ICONS.bookmarkFill : ICONS.bookmark}
+                </button>
               </div>
             </div>
 
-            <!-- Precision Telemetry Footer -->
-            <div class="grid grid-cols-3 gap-1.5 mt-2.5 pt-2 border-t border-sumi-900/10 text-[10px] font-medium text-sumi-800">
-              <div class="px-2 py-1 rounded-md bg-washi-100 flex items-center justify-center gap-1 font-mono font-bold">
-                <span class="text-moss-500">${SVG.bolt}</span>
-                <span>${spot.wifiMbps} Mbps</span>
+            <!-- Row 2: Store Name & Station -->
+            <h2 class="text-[13.5px] font-black text-moka-900 leading-snug mt-1">${spot.name}</h2>
+            <p class="text-[11px] text-moka-500 truncate mt-0.5">${spot.station} · ${spot.openHours}</p>
+
+            <!-- Row 3: POWER & WI-FI YES/NO MATRIX (Core User Need!) -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+              ${powerBadgeHTML(spot)}
+              ${wifiBadgeHTML(spot)}
+            </div>
+
+            <!-- Row 4: Direct 1-Tap Official Site & SNS Links -->
+            <div class="mt-2.5 pt-2 border-t border-moka-900/6 flex items-center justify-between gap-1.5">
+              <div class="flex items-center gap-1.5">
+                <a href="${spot.officialUrl}" target="_blank" rel="noopener noreferrer" data-ext-link class="px-2.5 py-1 rounded-lg bg-cream-100 hover:bg-honey-200 text-[10.5px] font-bold text-moka-800 inline-flex items-center gap-1 transition-colors">
+                  ${ICONS.globe}<span>公式サイト</span>${ICONS.ext}
+                </a>
+                <a href="${igHref}" target="_blank" rel="noopener noreferrer" data-ext-link class="px-2 py-1 rounded-lg bg-cream-100 hover:bg-[#FCE9E5] text-[10.5px] font-bold text-moka-800 inline-flex items-center gap-1 transition-colors" title="Instagramで雰囲気・最新営業情報を確認">
+                  ${ICONS.insta}<span>Instagram</span>
+                </a>
+                <a href="${xHref}" target="_blank" rel="noopener noreferrer" data-ext-link class="w-6 h-6 rounded-lg bg-cream-100 hover:bg-cream-200 text-moka-800 inline-flex items-center justify-center transition-colors" title="X（旧Twitter）の口コミ・空席投稿を検索">
+                  ${ICONS.xLogo}
+                </a>
               </div>
-              <div class="px-2 py-1 rounded-md bg-washi-100 flex items-center justify-center gap-1">
-                <span class="text-roast-500">${SVG.plug}</span>
-                <span>電源 <strong class="font-mono">${spot.outletRatio}%</strong></span>
-              </div>
-              <div class="px-2 py-1 rounded-md bg-washi-100 flex items-center justify-center gap-1.5 truncate">
-                <span class="w-1.5 h-1.5 rounded-full ${statusDot} shrink-0"></span>
-                <span class="truncate">${statusText}</span>
-              </div>
+              <span class="text-[10.5px] font-bold text-caramel-500">詳細 ›</span>
             </div>
           </div>
         </article>
@@ -676,1083 +640,771 @@
       })
       .join('');
 
-    bindSwipeAndClickCards();
+    bindCardInteractions();
   }
 
-  // =========================================================
-  // 6. SWIPE ACTION GESTURES ON SPOT CARDS
-  // =========================================================
-  function bindSwipeAndClickCards() {
-    document.querySelectorAll('[data-bookmark-btn]').forEach((btn) => {
+  function renderMapMarkers(list) {
+    if (!map || !pinsLayer) return;
+    pinsLayer.clearLayers();
+
+    // Show up to 140 markers smoothly
+    list.slice(0, 140).forEach((spot) => {
+      const isSelected = spot.id === state.selectedId;
+      const isCowork = spot.category === 'coworking';
+      const isOsm = spot.source === 'osm';
+      const hasP = spot.power === 'yes_all' || spot.power === 'yes_part';
+      const hasW = spot.wifi === 'yes_free' || spot.wifi === 'yes_reg';
+
+      const shortName = spot.name.length > 10 ? spot.name.slice(0, 9) + '…' : spot.name;
+
+      const statusDots = `
+        ${hasP ? '<span class="w-2 h-2 rounded-full bg-[#CA6B3E]" title="コンセントあり"></span>' : ''}
+        ${hasW ? '<span class="w-2 h-2 rounded-full bg-[#497E56]" title="Wi-Fiあり"></span>' : ''}
+      `;
+
+      const icon = L.divIcon({
+        className: 'noma-pin-icon',
+        html: `
+          <div class="map-pin-capsule ${isCowork ? 'pin-cowork' : ''} ${isOsm ? 'pin-osm' : ''} ${isSelected ? 'pin-selected' : ''}" data-pin="${spot.id}">
+            <div class="map-pin-head">
+              ${statusDots}
+              <span>${shortName}</span>
+            </div>
+            <div class="map-pin-tip"></div>
+          </div>
+        `,
+        iconSize: [120, 32],
+        iconAnchor: [60, 30]
+      });
+
+      const m = L.marker([spot.lat, spot.lng], {
+        icon,
+        zIndexOffset: isSelected ? 800 : isOsm ? 100 : 400
+      }).addTo(pinsLayer);
+
+      m.on('click', () => {
+        focusSpot(spot.id, { pan: true, openSheet: true });
+      });
+    });
+  }
+
+  // =========================================================================
+  // 6. SWIPE ACTION + CARD CLICK + BOOKMARK
+  // =========================================================================
+  function bindCardInteractions() {
+    // External links shouldn't trigger card open
+    document.querySelectorAll('[data-ext-link]').forEach((a) => {
+      a.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    document.querySelectorAll('[data-save-btn]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = btn.getAttribute('data-bookmark-btn');
-        if (id) toggleBookmark(id, e.clientX, e.clientY);
+        const id = btn.getAttribute('data-save-btn');
+        if (id) toggleSave(id, e.clientX, e.clientY);
       });
     });
 
-    document.querySelectorAll('.spot-index-card').forEach((card) => {
-      const spotId = card.getAttribute('data-card-fg');
-      const bg = card.parentElement?.querySelector('[data-swipe-bg]');
-      let startX = 0;
-      let startY = 0;
+    document.querySelectorAll('.cafe-card').forEach((card) => {
+      const id = card.getAttribute('data-card-id');
+      const underlay = card.parentElement?.querySelector('[data-underlay]');
+      let sx = 0;
+      let sy = 0;
       let dx = 0;
       let active = false;
       let moved = false;
 
-      const down = (x, y, target) => {
-        if (target.closest('button')) return;
-        startX = x;
-        startY = y;
+      const onDown = (x, y, target) => {
+        if (target.closest('button, a')) return;
+        sx = x;
+        sy = y;
         dx = 0;
         active = true;
         moved = false;
-        card.classList.add('is-dragging');
+        card.classList.add('dragging');
       };
 
-      const move = (x, y) => {
+      const onMove = (x, y) => {
         if (!active) return;
-        const curDx = x - startX;
-        const curDy = y - startY;
-
-        if (!moved && Math.abs(curDy) > Math.abs(curDx) && Math.abs(curDy) > 9) {
+        const cx = x - sx;
+        const cy = y - sy;
+        if (!moved && Math.abs(cy) > Math.abs(cx) && Math.abs(cy) > 9) {
           active = false;
-          card.classList.remove('is-dragging');
+          card.classList.remove('dragging');
           card.style.transform = '';
           return;
         }
-
-        if (Math.abs(curDx) > 9) {
+        if (Math.abs(cx) > 9) {
           moved = true;
-          dx = Math.max(-120, Math.min(120, curDx));
+          dx = Math.max(-115, Math.min(115, cx));
           card.style.transform = `translateX(${dx}px)`;
-          if (bg) {
-            bg.className = `swipe-reveal-layer ${dx > 0 ? 'swipe-reveal-bookmark' : 'swipe-reveal-stamp'}`;
+          if (underlay) {
+            underlay.className = `swipe-underlay ${dx > 0 ? 'mode-save' : 'mode-open'}`;
           }
         }
       };
 
-      const up = () => {
+      const onUp = () => {
         if (!active) return;
         active = false;
-        card.classList.remove('is-dragging');
+        card.classList.remove('dragging');
 
-        if (dx > 72 && spotId) {
+        if (dx > 68 && id) {
           const r = card.getBoundingClientRect();
-          toggleBookmark(spotId, r.left + 50, r.top + 30);
-        } else if (dx < -72 && spotId) {
-          const r = card.getBoundingClientRect();
-          recordCheckIn(spotId, r.right - 50, r.top + 30);
-          selectSpot(spotId, { openSheet: true, fly: true });
-        } else if (!moved && spotId) {
-          selectSpot(spotId, { openSheet: true, fly: true });
+          toggleSave(id, r.left + 48, r.top + 28);
+        } else if (dx < -68 && id) {
+          focusSpot(id, { pan: true, openSheet: true });
+        } else if (!moved && id) {
+          focusSpot(id, { pan: true, openSheet: true });
         }
         card.style.transform = '';
       };
 
-      card.addEventListener('mousedown', (e) => down(e.clientX, e.clientY, e.target));
-      window.addEventListener('mousemove', (e) => move(e.clientX, e.clientY));
-      window.addEventListener('mouseup', up);
+      card.addEventListener('mousedown', (e) => onDown(e.clientX, e.clientY, e.target));
+      window.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
+      window.addEventListener('mouseup', onUp);
 
-      card.addEventListener('touchstart', (e) => down(e.touches[0].clientX, e.touches[0].clientY, e.target), { passive: true });
-      card.addEventListener('touchmove', (e) => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-      card.addEventListener('touchend', up);
+      card.addEventListener('touchstart', (e) => onDown(e.touches[0].clientX, e.touches[0].clientY, e.target), { passive: true });
+      card.addEventListener('touchmove', (e) => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+      card.addEventListener('touchend', onUp);
     });
   }
 
-  function toggleBookmark(spotId, x, y) {
-    const spot = state.spots.find((s) => s.id === spotId);
-    const existed = state.savedIds.has(spotId);
+  function toggleSave(spotId, x, y) {
+    const all = getAllCombinedSpots();
+    const spot = all.find((s) => s.id === spotId);
+    const was = state.savedIds.has(spotId);
 
-    if (existed) {
+    if (was) {
       state.savedIds.delete(spotId);
       showToast({
-        iconSvg: SVG.bookmark,
-        title: 'ブックマークを解除しました',
-        message: spot ? spot.name : '',
-        actionLabel: 'UNDO',
-        onAction: () => {
+        title: '保存リストから外しました',
+        sub: spot ? spot.name : '',
+        undoLabel: '元に戻す',
+        onUndo: () => {
           state.savedIds.add(spotId);
-          syncSavedCounter();
-          renderDeckAndMap();
+          updateSavedBadge();
+          applyClientFiltersAndRender();
         }
       });
     } else {
       state.savedIds.add(spotId);
-      if (x && y) spawnVectorParticles(x, y);
+      if (x && y) burstParticles(x, y);
       showToast({
-        iconSvg: SVG.bookmarkFilled,
-        title: '関西ワークパスポートに保存しました',
-        message: spot ? spot.name : '',
-        accent: 'roast'
+        title: '保存リストに追加しました',
+        sub: spot ? spot.name : ''
       });
     }
-
-    syncSavedCounter();
-    renderDeckAndMap();
+    updateSavedBadge();
+    applyClientFiltersAndRender();
   }
 
-  function syncSavedCounter() {
-    if (el.savedBadge) el.savedBadge.textContent = String(state.savedIds.size);
-    const icon = document.getElementById('rail-bookmark-svg');
-    if (icon) {
-      icon.classList.add('scale-125');
-      setTimeout(() => icon.classList.remove('scale-125'), 260);
-    }
+  function updateSavedBadge() {
+    if (dom.savedCount) dom.savedCount.textContent = String(state.savedIds.size);
   }
 
-  async function recordCheckIn(spotId, x, y) {
-    try {
-      const res = await fetch('/api/checkin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spotId })
-      });
-      const data = await res.json();
-      state.checkedInIds.add(spotId);
-      state.beans += data.beansEarned || 15;
-      animateNumber(el.beanPoints, state.beans, 500);
-      if (x && y) spawnVectorParticles(x, y);
-      showToast({
-        iconSvg: SVG.stamp,
-        title: 'チェックイン・スタンプを押印しました',
-        message: data.message,
-        accent: 'moss'
-      });
-    } catch (_) {}
-  }
-
-  // =========================================================
-  // 7. PULL TO REFRESH (V60 Hand-Drip Pour-Over Animation)
-  // =========================================================
-  function initPullToRefresh() {
-    const scroller = el.scrollContainer;
-    const ptr = el.ptrIndicator;
-    if (!scroller || !ptr) return;
-
-    let startY = 0;
-    let pulling = false;
-    let dist = 0;
-    const triggerDist = 60;
-
-    const begin = (y) => {
-      if (scroller.scrollTop > 2) return;
-      startY = y;
-      pulling = true;
-      dist = 0;
-      ptr.classList.remove('ptr-snap', 'drip-active');
-    };
-
-    const drag = (y) => {
-      if (!pulling) return;
-      const diff = y - startY;
-      if (diff <= 0) {
-        dist = 0;
-        ptr.style.height = '0px';
-        return;
-      }
-      dist = Math.min(92, Math.pow(diff, 0.8) * 1.5);
-      ptr.style.height = `${dist}px`;
-      if (el.ptrText) {
-        el.ptrText.textContent =
-          dist >= triggerDist ? '離して関西エリアの最新空席を抽出' : '下に引いて最新ステータスをハンドドリップ...';
-      }
-    };
-
-    const release = async () => {
-      if (!pulling) return;
-      pulling = false;
-      ptr.classList.add('ptr-snap');
-
-      if (dist >= triggerDist) {
-        ptr.style.height = '48px';
-        ptr.classList.add('drip-active');
-        if (el.ptrText) el.ptrText.textContent = '空席・回線テレメトリを更新中...';
-        state.jitterSeed += 1;
-        await loadSpots({ showSkeleton: true, minSkeletonMs: 480 });
-        ptr.classList.remove('drip-active');
-        ptr.style.height = '0px';
-        showToast({
-          iconSvg: SVG.cup,
-          title: '最新の空席・実測Wi-Fi状況を更新しました',
-          message: `${state.areaLabel} 周辺のリアルタイム集計`,
-          accent: 'moss'
-        });
-      } else {
-        ptr.style.height = '0px';
-      }
-      dist = 0;
-    };
-
-    scroller.addEventListener('touchstart', (e) => begin(e.touches[0].clientY), { passive: true });
-    scroller.addEventListener('touchmove', (e) => drag(e.touches[0].clientY), { passive: true });
-    scroller.addEventListener('touchend', release);
-
-    scroller.addEventListener('mousedown', (e) => {
-      if (e.target.closest('button, a, .spot-index-card')) return;
-      begin(e.clientY);
-    });
-    window.addEventListener('mousemove', (e) => drag(e.clientY));
-    window.addEventListener('mouseup', release);
-  }
-
-  // =========================================================
-  // 8. DRAGGABLE BOTTOM SHEET + INFOGRAPHIC DOSSIER
-  // =========================================================
-  function selectSpot(spotId, { openSheet = true, fly = true } = {}) {
-    state.selectedSpotId = spotId;
-    const spot = state.spots.find((s) => s.id === spotId);
+  // =========================================================================
+  // 7. BOTTOM SHEET (Official Website, Instagram, X, Power/Wi-Fi Detail & Infographic)
+  // =========================================================================
+  function focusSpot(spotId, { pan = true, openSheet = true } = {}) {
+    state.selectedId = spotId;
+    const spot = getAllCombinedSpots().find((s) => s.id === spotId);
     if (!spot) return;
 
-    document.querySelectorAll('.spot-index-card').forEach((c) => {
-      c.classList.toggle('is-selected', c.getAttribute('data-card-fg') === spotId);
+    document.querySelectorAll('.cafe-card').forEach((c) => {
+      c.classList.toggle('active-card', c.getAttribute('data-card-id') === spotId);
     });
-    document.querySelectorAll('.craft-pin').forEach((p) => {
-      p.classList.toggle('is-active', p.getAttribute('data-pin-id') === spotId);
+    document.querySelectorAll('.map-pin-capsule').forEach((p) => {
+      p.classList.toggle('pin-selected', p.getAttribute('data-pin') === spotId);
     });
 
-    if (fly && map) {
-      // Offset latitude slightly south when sheet opens so pin stays clearly visible above sheet in landscape
-      const latOffset = openSheet ? -0.0022 : 0;
-      map.flyTo([spot.lat + latOffset, spot.lng], 15, { duration: 0.6 });
+    if (pan && map) {
+      const latOffset = openSheet ? -0.0025 : 0;
+      map.flyTo([spot.lat + latOffset, spot.lng], Math.max(map.getZoom(), 15), { duration: 0.55 });
     }
 
-    if (openSheet) renderAndOpenBottomSheet(spot);
+    if (openSheet) renderBottomSheet(spot);
   }
 
-  function renderAndOpenBottomSheet(spot) {
-    if (!el.bottomSheet || !el.bsContent || !el.bsBackdrop) return;
-    const isSaved = state.savedIds.has(spot.id);
-    const isStamped = state.checkedInIds.has(spot.id);
-    if (el.bsCodeLabel) el.bsCodeLabel.textContent = `ARCHIVE DOSSIER · ${spot.code} · ${spot.nameEn}`;
+  function renderBottomSheet(spot) {
+    if (!dom.bottomSheet || !dom.bsBody) return;
+    if (dom.bsAreaTag) dom.bsAreaTag.textContent = `${spot.areaLabel} · ${spot.categoryLabel}`;
 
-    el.bsContent.innerHTML = `
-      <!-- Top Architectural Header Row -->
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-        <div class="md:col-span-4 relative h-36 md:h-40 rounded-2xl overflow-hidden border border-sumi-900/25 bg-washi-200">
-          <img src="${spot.imageUrl}" alt="${spot.name}" class="w-full h-full object-cover" />
-          <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-washi-50/95 border border-sumi-900/30 font-mono text-[9px] font-bold tracking-wider">
-            ${spot.badge}
-          </span>
-        </div>
+    const saved = state.savedIds.has(spot.id);
+    const igHref =
+      spot.instagramUrl ||
+      `https://www.instagram.com/explore/search/keyword/?q=${encodeURIComponent(spot.name)}`;
+    const xHref =
+      spot.xUrl || `https://x.com/search?q=${encodeURIComponent(spot.name + ' 電源 OR Wi-Fi')}`;
+    const gmapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}&query_place_id=${spot.lat},${spot.lng}`;
+    const photo = spot.photoUrl || 'https://sspark.genspark.ai/i/81znq8BwVCgoGXQl?width=900';
 
-        <div class="md:col-span-8 space-y-2">
-          <div class="flex flex-wrap items-center gap-2 text-[11px]">
-            <span class="px-2 py-0.5 rounded bg-washi-200 font-bold text-sumi-800">${spot.categoryLabel}</span>
-            <span class="text-sumi-600 font-medium">${spot.station} 徒歩${spot.walkMinutes}分（現在地から ${spot.distanceMeters}m）</span>
-            <span class="font-mono text-[10px] text-moss-500 font-bold">OPEN ${spot.openHours}</span>
+    // Hourly openness pattern for infographic animation
+    const hourly = [78, 62, 42, 72, 58, 66, 84];
+    const hoursLabel = ['8時', '10時', '12時', '14時', '16時', '18時', '20時'];
+    const pMeter = spot.power === 'yes_all' ? 100 : spot.power === 'yes_part' ? 76 : 12;
+    const wMeter = spot.wifi === 'yes_free' ? 94 : spot.wifi === 'yes_reg' ? 75 : 12;
+
+    dom.bsBody.innerHTML = `
+      <!-- Top Summary + Official & SNS Primary Action Bar -->
+      <div class="flex flex-col md:flex-row gap-4 items-start">
+        <img src="${photo}" alt="${spot.name}" class="w-full md:w-36 h-32 rounded-2xl object-cover border border-moka-900/10 shrink-0" />
+
+        <div class="flex-1 min-w-0 space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h2 id="bs-title" class="text-lg sm:text-xl font-black text-moka-900 leading-tight">${spot.name}</h2>
+              <p class="text-xs text-moka-500 font-bold mt-0.5">${spot.station} · 営業時間 ${spot.openHours} · 目安 ${spot.priceHint}</p>
+            </div>
+            <button id="bs-save-btn" type="button" class="shrink-0 px-3 py-2 rounded-xl border ${
+              saved ? 'bg-caramel-500 text-white border-caramel-500' : 'bg-cream-100 text-moka-800 border-moka-900/15'
+            } text-xs font-bold inline-flex items-center gap-1.5 transition-colors">
+              ${saved ? ICONS.bookmarkFill : ICONS.bookmark}
+              <span>${saved ? '保存済み' : '保存する'}</span>
+            </button>
           </div>
 
-          <h2 id="bs-spot-title" class="text-lg sm:text-xl font-bold text-sumi-900 tracking-tight">${spot.name}</h2>
-          <p class="text-xs text-sumi-700 leading-relaxed">${spot.description}</p>
+          <p class="text-xs text-moka-700 leading-relaxed">${spot.note}</p>
 
-          <!-- Perforated Ticket Check-in + Bookmark + Route -->
+          <!-- Prominent Official Website / Instagram / X / Google Maps Links -->
           <div class="flex flex-wrap items-center gap-2 pt-1">
-            <button id="bs-stamp-btn" type="button" class="craft-btn inline-flex items-center rounded-xl overflow-hidden border border-sumi-900 ${
-              isStamped ? 'bg-moss-500 text-washi-50' : 'bg-sumi-900 text-washi-50 hover:bg-roast-500'
-            } text-xs font-bold transition-colors">
-              <span class="px-3.5 py-2 flex items-center gap-1.5">
-                ${SVG.stamp}
-                <span>${isStamped ? 'チェックイン記録済' : 'チェックイン記録'}</span>
-              </span>
-              <span class="ticket-stub px-2.5 py-2 font-mono text-[10px] opacity-90">+15</span>
-            </button>
+            <a href="${spot.officialUrl}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-moka-900 hover:bg-caramel-500 text-cream-50 text-xs font-bold inline-flex items-center gap-1.5 transition-colors shadow-sm">
+              ${ICONS.globe}
+              <span>公式サイトを見る</span>
+              ${ICONS.ext}
+            </a>
 
-            <button id="bs-bookmark-btn" type="button" class="craft-btn px-3.5 py-2 rounded-xl border border-sumi-900 ${
-              isSaved ? 'bg-brass-300/70 text-sumi-900' : 'bg-washi-50 text-sumi-900 hover:bg-washi-200'
-            } text-xs font-bold inline-flex items-center gap-1.5">
-              ${isSaved ? SVG.bookmarkFilled : SVG.bookmark}
-              <span>${isSaved ? '保存済み' : 'パスポートに保存'}</span>
-            </button>
+            <a href="${igHref}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-xl bg-[#FDF0ED] hover:bg-[#FADCD5] border border-[#E2875A]/30 text-moka-900 text-xs font-bold inline-flex items-center gap-1.5 transition-colors">
+              ${ICONS.insta}
+              <span>Instagram (${spot.instagramHandle || '投稿検索'})</span>
+              ${ICONS.ext}
+            </a>
 
-            <a
-              href="https://www.openstreetmap.org/directions?from=${state.lat}%2C${state.lng}&to=${spot.lat}%2C${spot.lng}#map=16/${spot.lat}/${spot.lng}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="craft-btn px-3 py-2 rounded-xl border border-sumi-900/35 bg-washi-100 hover:bg-washi-200 text-xs font-bold text-sumi-800 inline-flex items-center gap-1.5"
-            >
-              ${SVG.route}
-              <span>OSMルート確認</span>
+            <a href="${xHref}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-xl bg-cream-100 hover:bg-cream-200 border border-moka-900/12 text-moka-900 text-xs font-bold inline-flex items-center gap-1.5 transition-colors">
+              ${ICONS.xLogo}
+              <span>X 最新口コミ</span>
+              ${ICONS.ext}
+            </a>
+
+            <a href="${gmapHref}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-xl bg-cream-100 hover:bg-honey-200 border border-moka-900/12 text-moka-900 text-xs font-bold inline-flex items-center gap-1.5 transition-colors">
+              ${ICONS.route}
+              <span>Googleマップ経路</span>
             </a>
           </div>
         </div>
       </div>
 
-      <!-- ANIMATED INFOGRAPHIC SUITE (Pentagon Radar + 4 Precision Bars + Hourly Chart) -->
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 bg-washi-100 border border-sumi-900/15 rounded-2xl p-4">
+      <!-- Clear Power & Wi-Fi Spec Box + Animated Infographic Bars -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1">
 
-        <!-- Left: Pentagon Radar Infographic -->
-        <div class="md:col-span-4 bg-washi-50 rounded-xl p-3 border border-sumi-900/10 flex flex-col items-center justify-center">
-          <div class="w-full flex items-center justify-between text-[10px] font-mono text-sumi-600 mb-1">
-            <span>RADAR SPEC</span>
-            <span class="font-bold text-sumi-900">SCORE ${spot.nomadScore}/100</span>
-          </div>
-          ${buildPentagonRadarSVG(spot)}
-        </div>
-
-        <!-- Center: 4 Precision Horizontal Telemetry Meters -->
-        <div class="md:col-span-4 bg-washi-50 rounded-xl p-3.5 border border-sumi-900/10 flex flex-col justify-between space-y-2.5">
-          <div>
-            <div class="flex justify-between text-[11px] font-bold mb-1">
-              <span>実測回線 (${spot.wifiMbps} Mbps)</span>
-              <span class="font-mono text-moss-500">${spot.wifiStability}%</span>
-            </div>
-            <div class="h-2 rounded-full bg-washi-200 overflow-hidden">
-              <div class="bs-meter-bar h-full bg-moss-500 rounded-full" data-w="${spot.wifiStability}%" style="width:0%"></div>
+        <!-- Left: Explicit Power & Wi-Fi Details -->
+        <div class="md:col-span-5 grid grid-cols-1 gap-2">
+          <div class="rounded-2xl bg-[#FFF6F0] border border-[#E2875A]/30 p-3 flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#CA6B3E] text-white flex items-center justify-center shrink-0 mt-0.5">${ICONS.plug}</div>
+            <div>
+              <div class="text-[11px] font-bold text-[#B55428]">コンセント・電源設備</div>
+              <div class="text-xs font-black text-moka-900 mt-0.5">${spot.powerDetail}</div>
             </div>
           </div>
 
-          <div>
-            <div class="flex justify-between text-[11px] font-bold mb-1">
-              <span>AC・USB電源カバー率</span>
-              <span class="font-mono text-roast-500">${spot.outletRatio}%</span>
-            </div>
-            <div class="h-2 rounded-full bg-washi-200 overflow-hidden">
-              <div class="bs-meter-bar h-full bg-roast-500 rounded-full" data-w="${spot.outletRatio}%" style="width:0%"></div>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex justify-between text-[11px] font-bold mb-1">
-              <span>チェア・机奥行き快適度</span>
-              <span class="font-mono">${spot.chairComfort}</span>
-            </div>
-            <div class="h-2 rounded-full bg-washi-200 overflow-hidden">
-              <div class="bs-meter-bar h-full bg-brass-500 rounded-full" data-w="${spot.chairComfort}%" style="width:0%"></div>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex justify-between text-[11px] font-bold mb-1">
-              <span>静寂・集中環境指数</span>
-              <span class="font-mono">${spot.quietness}</span>
-            </div>
-            <div class="h-2 rounded-full bg-washi-200 overflow-hidden">
-              <div class="bs-meter-bar h-full bg-sumi-800 rounded-full" data-w="${spot.quietness}%" style="width:0%"></div>
+          <div class="rounded-2xl bg-[#F1F8F3] border border-[#6FA07A]/35 p-3 flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#497E56] text-white flex items-center justify-center shrink-0 mt-0.5">${ICONS.wifi}</div>
+            <div>
+              <div class="text-[11px] font-bold text-[#366341]">Wi-Fi・通信環境</div>
+              <div class="text-xs font-black text-moka-900 mt-0.5">${spot.wifiDetail}</div>
             </div>
           </div>
         </div>
 
-        <!-- Right: Hourly Openness Bar Infographic -->
-        <div class="md:col-span-4 bg-washi-50 rounded-xl p-3.5 border border-sumi-900/10 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-sumi-900">時間帯別の空席ゆとり率</span>
-            <span class="font-mono text-[10px] text-roast-500 font-bold">残${spot.seatsAvailable}/${spot.totalSeats}席</span>
+        <!-- Center: Animated Work Spec Infographic Meters -->
+        <div class="md:col-span-4 rounded-2xl bg-cream-100/80 border border-moka-900/8 p-3.5 flex flex-col justify-between space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-bold text-moka-700">
+            <span>作業環境スコア</span>
+            <span class="font-mono text-moka-900">${spot.workIndex} / 100</span>
           </div>
-          <div class="h-28 flex items-end justify-between gap-1.5 pt-3">
-            ${spot.hourlyStats
-              .map((h) => {
-                const openPct = 100 - h.crowd;
-                return `
-                <div class="flex-1 flex flex-col items-center h-full justify-end">
-                  <span class="font-mono text-[9px] text-sumi-600 mb-0.5">${openPct}</span>
-                  <div class="w-full h-16 bg-washi-200/80 rounded-t flex items-end overflow-hidden">
-                    <div class="bs-hourly-bar w-full rounded-t ${
-                      openPct >= 65 ? 'bg-moss-500' : 'bg-sumi-700'
-                    }" data-h="${openPct}%" style="height:0%"></div>
-                  </div>
-                  <span class="font-mono text-[9px] text-sumi-700 mt-1">${h.hour.replace('h', '')}</span>
+          <div>
+            <div class="flex justify-between text-[10.5px] font-bold mb-0.5"><span>電源確保しやすさ</span><span class="font-mono">${pMeter}%</span></div>
+            <div class="h-1.5 rounded-full bg-cream-200 overflow-hidden"><div class="meter-fill h-full bg-caramel-500 rounded-full" data-w="${pMeter}%" style="width:0%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-[10.5px] font-bold mb-0.5"><span>通信・Wi-Fi快適度</span><span class="font-mono">${wMeter}%</span></div>
+            <div class="h-1.5 rounded-full bg-cream-200 overflow-hidden"><div class="meter-fill h-full bg-sage-500 rounded-full" data-w="${wMeter}%" style="width:0%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-[10.5px] font-bold mb-0.5"><span>机の広さ・落ち着き</span><span class="font-mono">${spot.deskScore || 82}%</span></div>
+            <div class="h-1.5 rounded-full bg-cream-200 overflow-hidden"><div class="meter-fill h-full bg-moka-800 rounded-full" data-w="${spot.deskScore || 82}%" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- Right: Animated Hourly Seat Comfort Chart -->
+        <div class="md:col-span-3 rounded-2xl bg-cream-100/80 border border-moka-900/8 p-3.5 flex flex-col justify-between">
+          <div class="text-[11px] font-bold text-moka-700">時間帯別の座りやすさ傾向</div>
+          <div class="h-20 flex items-end justify-between gap-1 pt-2">
+            ${hourly
+              .map(
+                (v, idx) => `
+              <div class="flex-1 flex flex-col items-center h-full justify-end">
+                <div class="w-full h-14 bg-cream-200/80 rounded-t flex items-end overflow-hidden">
+                  <div class="crowd-bar w-full rounded-t ${v >= 70 ? 'bg-sage-500' : 'bg-caramel-400'}" data-h="${v}%" style="height:0%"></div>
                 </div>
-              `;
-              })
+                <span class="text-[9px] font-mono text-moka-500 mt-1">${hoursLabel[idx].replace('時', '')}</span>
+              </div>
+            `
+              )
               .join('')}
           </div>
         </div>
       </div>
-
-      <!-- Pairing Coffee & Call Policy + Field Notes -->
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5">
-        <div class="md:col-span-5 bg-washi-50 border border-sumi-900/15 rounded-xl p-3 flex items-center gap-3">
-          <img src="${spot.subImageUrl}" alt="${spot.signatureDrink}" class="w-14 h-14 rounded-lg object-cover border border-sumi-900/20 shrink-0" />
-          <div class="min-w-0">
-            <span class="font-mono text-[9px] uppercase tracking-wider text-roast-500 font-bold">SIGNATURE PAIRING</span>
-            <div class="text-xs font-bold text-sumi-900 truncate">${spot.signatureDrink}</div>
-            <div class="font-mono text-[11px] text-sumi-600">${spot.signaturePrice} · ${spot.callLabel}</div>
-          </div>
-        </div>
-
-        <div class="md:col-span-7 bg-washi-50 border border-sumi-900/15 rounded-xl p-3 space-y-2">
-          <div class="flex flex-wrap gap-1">
-            ${spot.tags.map((t) => `<span class="px-2 py-0.5 rounded bg-washi-200/70 text-[10px] font-medium text-sumi-800">#${t}</span>`).join('')}
-          </div>
-          ${spot.reviews
-            .slice(0, 1)
-            .map(
-              (r) => `
-            <div class="flex items-start gap-2 pt-1 border-t border-sumi-900/10">
-              <span class="w-6 h-6 rounded-full bg-sumi-900 text-washi-50 font-mono text-[9px] font-bold flex items-center justify-center shrink-0">${r.initials}</span>
-              <p class="text-[11px] text-sumi-700 leading-snug"><strong class="text-sumi-900">${r.author} (${r.role}):</strong> ${r.comment}</p>
-            </div>
-          `
-            )
-            .join('')}
-        </div>
-      </div>
     `;
 
-    state.sheetExpanded = false;
-    el.bottomSheet.style.maxHeight = '62%';
-    if (el.bsExpandBtn) el.bsExpandBtn.textContent = '拡大表示';
-    el.bsBackdrop.classList.remove('opacity-0', 'pointer-events-none');
-    el.bottomSheet.classList.remove('translate-y-full');
-    el.bottomSheet.style.transform = 'translateY(0px)';
+    state.sheetFull = false;
+    dom.bottomSheet.style.maxHeight = '64vh';
+    if (dom.bsSizeBtn) dom.bsSizeBtn.textContent = '拡大';
+    dom.bottomSheet.classList.remove('translate-y-[120%]');
+    dom.bottomSheet.style.transform = 'translateY(0px)';
 
-    // Trigger Infographic Animations inside Bottom Sheet
+    // Trigger Infographic Bar Animations
     setTimeout(() => {
-      const poly = document.getElementById('bs-radar-poly');
-      if (poly) {
-        poly.setAttribute('points', poly.getAttribute('data-target-points') || '');
-      }
-      el.bsContent.querySelectorAll('.bs-meter-bar').forEach((b) => {
-        b.style.width = b.getAttribute('data-w') || '80%';
+      dom.bsBody.querySelectorAll('.meter-fill').forEach((el) => {
+        el.style.width = el.getAttribute('data-w') || '75%';
       });
-      el.bsContent.querySelectorAll('.bs-hourly-bar').forEach((b, i) => {
+      dom.bsBody.querySelectorAll('.crowd-bar').forEach((el, i) => {
         setTimeout(() => {
-          b.style.height = b.getAttribute('data-h') || '50%';
-        }, i * 55);
+          el.style.height = el.getAttribute('data-h') || '60%';
+        }, i * 45);
       });
-    }, 80);
+    }, 60);
 
-    document.getElementById('bs-stamp-btn')?.addEventListener('click', (e) => {
-      recordCheckIn(spot.id, e.clientX, e.clientY);
-      renderAndOpenBottomSheet(spot);
-    });
-    document.getElementById('bs-bookmark-btn')?.addEventListener('click', (e) => {
-      toggleBookmark(spot.id, e.clientX, e.clientY);
-      renderAndOpenBottomSheet(spot);
+    document.getElementById('bs-save-btn')?.addEventListener('click', (e) => {
+      toggleSave(spot.id, e.clientX, e.clientY);
+      renderBottomSheet(spot);
     });
   }
 
-  function closeBottomSheet() {
-    if (!el.bottomSheet || !el.bsBackdrop) return;
-    el.bsBackdrop.classList.add('opacity-0', 'pointer-events-none');
-    el.bottomSheet.style.transform = '';
-    el.bottomSheet.classList.add('translate-y-full');
+  function closeSheet() {
+    if (!dom.bottomSheet) return;
+    dom.bottomSheet.style.transform = '';
+    dom.bottomSheet.classList.add('translate-y-[120%]');
   }
 
-  function initBottomSheetDrag() {
-    el.bsCloseBtn?.addEventListener('click', closeBottomSheet);
-    el.bsBackdrop?.addEventListener('click', closeBottomSheet);
-
-    el.bsExpandBtn?.addEventListener('click', () => {
-      if (!el.bottomSheet) return;
-      state.sheetExpanded = !state.sheetExpanded;
-      el.bottomSheet.style.maxHeight = state.sheetExpanded ? '90%' : '62%';
-      el.bsExpandBtn.textContent = state.sheetExpanded ? '標準サイズ' : '拡大表示';
+  function initBottomSheetGestures() {
+    dom.bsCloseBtn?.addEventListener('click', closeSheet);
+    dom.bsSizeBtn?.addEventListener('click', () => {
+      if (!dom.bottomSheet) return;
+      state.sheetFull = !state.sheetFull;
+      dom.bottomSheet.style.maxHeight = state.sheetFull ? '88vh' : '64vh';
+      dom.bsSizeBtn.textContent = state.sheetFull ? '標準' : '拡大';
     });
 
-    const handle = el.bsDragHandle;
-    if (!handle || !el.bottomSheet) return;
-
-    let startY = 0;
+    const h = dom.bsHandle;
+    if (!h || !dom.bottomSheet) return;
+    let sy = 0;
     let dy = 0;
-    let dragging = false;
+    let drag = false;
 
-    const start = (y) => {
-      startY = y;
+    const down = (y) => {
+      sy = y;
       dy = 0;
-      dragging = true;
-      el.bottomSheet.style.transition = 'none';
+      drag = true;
+      dom.bottomSheet.style.transition = 'none';
     };
     const move = (y) => {
-      if (!dragging) return;
-      dy = y - startY;
-      if (dy > 0) {
-        el.bottomSheet.style.transform = `translateY(${dy}px)`;
-      } else if (dy < -35) {
-        state.sheetExpanded = true;
-        el.bottomSheet.style.maxHeight = '90%';
-        if (el.bsExpandBtn) el.bsExpandBtn.textContent = '標準サイズ';
+      if (!drag) return;
+      dy = y - sy;
+      if (dy > 0) dom.bottomSheet.style.transform = `translateY(${dy}px)`;
+      else if (dy < -30) {
+        state.sheetFull = true;
+        dom.bottomSheet.style.maxHeight = '88vh';
       }
     };
-    const end = () => {
-      if (!dragging) return;
-      dragging = false;
-      el.bottomSheet.style.transition = '';
-      if (dy > 95) {
-        closeBottomSheet();
-      } else {
-        el.bottomSheet.style.transform = 'translateY(0px)';
-      }
+    const up = () => {
+      if (!drag) return;
+      drag = false;
+      dom.bottomSheet.style.transition = '';
+      if (dy > 85) closeSheet();
+      else dom.bottomSheet.style.transform = 'translateY(0px)';
     };
 
-    handle.addEventListener('touchstart', (e) => start(e.touches[0].clientY), { passive: true });
-    handle.addEventListener('touchmove', (e) => move(e.touches[0].clientY), { passive: true });
-    handle.addEventListener('touchend', end);
+    h.addEventListener('touchstart', (e) => down(e.touches[0].clientY), { passive: true });
+    h.addEventListener('touchmove', (e) => move(e.touches[0].clientY), { passive: true });
+    h.addEventListener('touchend', up);
+    h.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('button')) down(e.clientY);
+    });
+    window.addEventListener('mousemove', (e) => move(e.clientY));
+    window.addEventListener('mouseup', up);
+  }
 
-    handle.addEventListener('mousedown', (e) => {
-      if (e.target.closest('button')) return;
-      start(e.clientY);
+  // =========================================================================
+  // 8. PULL TO REFRESH (Re-scans Map Center + Loads Nearby OSM Cafes)
+  // =========================================================================
+  function initPullToRefresh() {
+    const scroller = dom.cardsScroller;
+    const bar = dom.ptrBar;
+    if (!scroller || !bar) return;
+
+    let sy = 0;
+    let pulling = false;
+    let dist = 0;
+
+    const start = (y) => {
+      if (scroller.scrollTop > 2) return;
+      sy = y;
+      pulling = true;
+      dist = 0;
+      bar.classList.remove('releasing');
+    };
+    const move = (y) => {
+      if (!pulling) return;
+      const d = y - sy;
+      if (d <= 0) {
+        dist = 0;
+        bar.style.height = '0px';
+        return;
+      }
+      dist = Math.min(76, Math.pow(d, 0.8) * 1.4);
+      bar.style.height = `${dist}px`;
+      if (dom.ptrLabel) {
+        dom.ptrLabel.textContent =
+          dist >= 52 ? '離して現在の地図中心から再スキャン' : '引っ張って現在マップ周辺のカフェを再スキャン';
+      }
+    };
+    const end = async () => {
+      if (!pulling) return;
+      pulling = false;
+      bar.classList.add('releasing');
+      if (dist >= 52 && map) {
+        bar.style.height = '42px';
+        if (dom.ptrLabel) dom.ptrLabel.textContent = '周辺の街カフェを更新中...';
+        const c = map.getCenter();
+        state.lat = c.lat;
+        state.lng = c.lng;
+        drawOriginMarker();
+        await loadOsmCafesAround(c.lat, c.lng, 1600, false);
+        applyClientFiltersAndRender();
+      }
+      bar.style.height = '0px';
+      dist = 0;
+    };
+
+    scroller.addEventListener('touchstart', (e) => start(e.touches[0].clientY), { passive: true });
+    scroller.addEventListener('touchmove', (e) => move(e.touches[0].clientY), { passive: true });
+    scroller.addEventListener('touchend', end);
+    scroller.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('button, a, .cafe-card')) start(e.clientY);
     });
     window.addEventListener('mousemove', (e) => move(e.clientY));
     window.addEventListener('mouseup', end);
   }
 
-  // =========================================================
+  // =========================================================================
   // 9. AUTO COMPLETE SEARCH
-  // =========================================================
-  let acTimer = null;
+  // =========================================================================
+  let acDebounce = null;
 
-  function highlightQuery(str, q) {
-    if (!q) return str;
+  function highlightText(txt, q) {
+    if (!q) return txt;
     const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return str.replace(new RegExp(`(${esc})`, 'gi'), '<mark class="bg-brass-300 text-sumi-900 px-0.5 rounded font-bold">$1</mark>');
+    return txt.replace(new RegExp(`(${esc})`, 'gi'), '<mark class="bg-honey-300 text-moka-900 rounded px-0.5">$1</mark>');
   }
 
-  async function fetchAutocomplete(q) {
+  async function refreshAutocomplete(q) {
     try {
       const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(q)}`);
       const data = await res.json();
-      state.autocompleteItems = data.suggestions || [];
-      state.acActiveIndex = -1;
-      renderAutocomplete(q);
+      state.acItems = data.items || [];
+      state.acIndex = -1;
+      drawAutocomplete(q);
     } catch (_) {}
   }
 
-  function renderAutocomplete(q) {
-    if (!el.acDropdown || !el.acList) return;
-    if (!state.autocompleteItems.length) {
-      el.acDropdown.classList.add('hidden');
-      el.searchInput?.setAttribute('aria-expanded', 'false');
+  function drawAutocomplete(q) {
+    if (!dom.acPanel || !dom.acList) return;
+    if (!state.acItems.length) {
+      dom.acPanel.classList.add('hidden');
       return;
     }
 
-    if (el.acCount) el.acCount.textContent = `${state.autocompleteItems.length}`;
-
-    el.acList.innerHTML = state.autocompleteItems
-      .map((item, idx) => {
-        const iconMarkup = SVG[item.iconType] || SVG.cup;
-        return `
-        <li
-          role="option"
-          data-ac-idx="${idx}"
-          class="ac-row px-3 py-2 flex items-center gap-2.5 cursor-pointer transition-colors ${
-            idx === state.acActiveIndex ? 'bg-brass-300/60' : 'hover:bg-washi-200/70'
-          }"
-        >
-          <span class="w-7 h-7 rounded-lg bg-washi-100 border border-sumi-900/15 flex items-center justify-center text-sumi-800 shrink-0">
-            ${iconMarkup}
-          </span>
-          <div class="flex-1 min-w-0">
-            <div class="text-xs font-bold text-sumi-900 truncate">${highlightQuery(item.label, q)}</div>
-            <div class="text-[10px] text-sumi-600 truncate">${item.sub}</div>
-          </div>
-          <span class="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-washi-200 text-sumi-700 shrink-0">
-            ${item.type === 'spot' ? 'OPEN' : item.type === 'area' ? 'JUMP' : 'TAG'}
-          </span>
-        </li>
-      `;
-      })
+    dom.acList.innerHTML = state.acItems
+      .map(
+        (it, idx) => `
+      <li role="option" data-ac="${idx}" class="px-3.5 py-2.5 flex items-center justify-between gap-2 cursor-pointer text-xs transition-colors ${
+        idx === state.acIndex ? 'bg-honey-200/70' : 'hover:bg-cream-200/60'
+      }">
+        <div class="min-w-0">
+          <div class="font-bold text-moka-900 truncate">${highlightText(it.label, q)}</div>
+          <div class="text-[10.5px] text-moka-500 truncate">${it.sub}</div>
+        </div>
+        <span class="shrink-0 text-[10px] font-mono px-2 py-0.5 rounded-md bg-cream-200/80 text-moka-700">
+          ${it.kind === 'spot' ? '店舗' : it.kind === 'area' ? '移動' : '絞込'}
+        </span>
+      </li>
+    `
+      )
       .join('');
 
-    el.acDropdown.classList.remove('hidden');
-    el.searchInput?.setAttribute('aria-expanded', 'true');
+    dom.acPanel.classList.remove('hidden');
 
-    el.acList.querySelectorAll('.ac-row').forEach((li) => {
+    dom.acList.querySelectorAll('[data-ac]').forEach((li) => {
       li.addEventListener('mousedown', (e) => {
         e.preventDefault();
-        const i = parseInt(li.getAttribute('data-ac-idx') || '0', 10);
-        chooseAutocompleteItem(state.autocompleteItems[i]);
+        const idx = parseInt(li.getAttribute('data-ac') || '0', 10);
+        pickAutocomplete(state.acItems[idx]);
       });
     });
   }
 
-  function chooseAutocompleteItem(item) {
+  function pickAutocomplete(item) {
     if (!item) return;
-    el.acDropdown?.classList.add('hidden');
-    el.searchInput?.setAttribute('aria-expanded', 'false');
+    dom.acPanel?.classList.add('hidden');
 
-    if (item.type === 'spot' && item.spotId) {
+    if (item.kind === 'spot' && item.spotId) {
+      state.region = 'all';
+      syncRegionPills();
       state.query = '';
-      if (el.searchInput) el.searchInput.value = item.label;
-      el.clearSearchBtn?.classList.remove('hidden');
-      loadSpots({ showSkeleton: false }).then(() => {
-        selectSpot(item.spotId, { openSheet: true, fly: true });
-      });
+      if (dom.searchInput) dom.searchInput.value = item.label;
+      dom.clearQBtn?.classList.remove('hidden');
+      applyClientFiltersAndRender();
+      focusSpot(item.spotId, { pan: true, openSheet: true });
       return;
     }
 
-    if (item.type === 'area' && item.areaId && KANSAI_AREA_COORDS[item.areaId]) {
-      jumpToKansaiArea(item.areaId);
+    if (item.kind === 'area' && item.areaId) {
+      switchRegion(item.areaId);
       return;
     }
 
     state.query = item.query;
-    if (el.searchInput) el.searchInput.value = item.query;
-    el.clearSearchBtn?.classList.remove('hidden');
-    loadSpots({ showSkeleton: true });
+    if (dom.searchInput) dom.searchInput.value = item.query;
+    dom.clearQBtn?.classList.remove('hidden');
+    applyClientFiltersAndRender();
   }
 
   function initAutocomplete() {
-    if (!el.searchInput) return;
+    if (!dom.searchInput) return;
 
-    el.searchInput.addEventListener('focus', () => {
-      fetchAutocomplete(el.searchInput.value.trim());
+    dom.searchInput.addEventListener('focus', () => {
+      refreshAutocomplete(dom.searchInput.value.trim());
     });
 
-    el.searchInput.addEventListener('input', () => {
-      const val = el.searchInput.value.trim();
-      el.clearSearchBtn?.classList.toggle('hidden', !val);
-      clearTimeout(acTimer);
-      acTimer = setTimeout(() => {
-        state.query = val;
-        fetchAutocomplete(val);
-        loadSpots({ showSkeleton: false });
-      }, 150);
+    dom.searchInput.addEventListener('input', () => {
+      const v = dom.searchInput.value.trim();
+      dom.clearQBtn?.classList.toggle('hidden', !v);
+      clearTimeout(acDebounce);
+      acDebounce = setTimeout(() => {
+        state.query = v;
+        refreshAutocomplete(v);
+        applyClientFiltersAndRender();
+      }, 130);
     });
 
-    el.searchInput.addEventListener('keydown', (e) => {
-      const len = state.autocompleteItems.length;
-      if (e.key === 'ArrowDown' && len > 0) {
+    dom.searchInput.addEventListener('keydown', (e) => {
+      const len = state.acItems.length;
+      if (e.key === 'ArrowDown' && len) {
         e.preventDefault();
-        state.acActiveIndex = (state.acActiveIndex + 1) % len;
-        renderAutocomplete(el.searchInput.value.trim());
-      } else if (e.key === 'ArrowUp' && len > 0) {
+        state.acIndex = (state.acIndex + 1) % len;
+        drawAutocomplete(dom.searchInput.value.trim());
+      } else if (e.key === 'ArrowUp' && len) {
         e.preventDefault();
-        state.acActiveIndex = (state.acActiveIndex - 1 + len) % len;
-        renderAutocomplete(el.searchInput.value.trim());
+        state.acIndex = (state.acIndex - 1 + len) % len;
+        drawAutocomplete(dom.searchInput.value.trim());
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        if (state.acActiveIndex >= 0 && state.autocompleteItems[state.acActiveIndex]) {
-          chooseAutocompleteItem(state.autocompleteItems[state.acActiveIndex]);
+        if (state.acIndex >= 0 && state.acItems[state.acIndex]) {
+          pickAutocomplete(state.acItems[state.acIndex]);
         } else {
-          state.query = el.searchInput.value.trim();
-          el.acDropdown?.classList.add('hidden');
-          loadSpots({ showSkeleton: true });
+          dom.acPanel?.classList.add('hidden');
+          state.query = dom.searchInput.value.trim();
+          applyClientFiltersAndRender();
         }
       } else if (e.key === 'Escape') {
-        el.acDropdown?.classList.add('hidden');
+        dom.acPanel?.classList.add('hidden');
       }
     });
 
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#autocomplete-wrapper')) {
-        el.acDropdown?.classList.add('hidden');
-      }
+      if (!e.target.closest('#ac-container')) dom.acPanel?.classList.add('hidden');
     });
 
-    el.clearSearchBtn?.addEventListener('click', () => {
-      el.searchInput.value = '';
+    dom.clearQBtn?.addEventListener('click', () => {
+      dom.searchInput.value = '';
       state.query = '';
-      el.clearSearchBtn.classList.add('hidden');
-      loadSpots({ showSkeleton: true });
+      dom.clearQBtn.classList.add('hidden');
+      applyClientFiltersAndRender();
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== el.searchInput) {
+      if (e.key === '/' && document.activeElement !== dom.searchInput) {
         e.preventDefault();
-        el.searchInput.focus();
+        dom.searchInput.focus();
       }
     });
   }
 
-  // =========================================================
-  // 10. KANSAI RAIL, FILTERS, AMBIENCE SYNTH, TIMER & CURSOR
-  // =========================================================
-  function jumpToKansaiArea(areaId) {
-    const target = KANSAI_AREA_COORDS[areaId];
-    if (!target) return;
-
-    state.areaId = areaId;
-    state.lat = target.lat;
-    state.lng = target.lng;
-    state.areaLabel = target.label;
-    state.savedOnlyMode = false;
-
-    if (el.areaCaption) el.areaCaption.textContent = `${target.label} — 徒歩圏フィールドノート`;
-
-    document.querySelectorAll('.rail-area-btn').forEach((btn) => {
-      const active = btn.getAttribute('data-area') === areaId;
-      btn.className = `rail-area-btn group w-12 py-2 rounded-xl border flex flex-col items-center gap-0.5 transition-all ${
-        active
-          ? 'border-sumi-900 bg-sumi-900 text-washi-50'
-          : 'border-transparent hover:border-sumi-900/30 bg-washi-50/70 text-sumi-800'
-      }`;
-    });
-
-    closeBottomSheet();
-    renderOriginBeacon();
-    if (map) map.flyTo([target.lat, target.lng], target.zoom, { duration: 0.75 });
-    loadSpots({ showSkeleton: true });
-
-    showToast({
-      iconSvg: SVG.pin,
-      title: `${target.label} へ移動しました`,
-      message: '基準座標からの徒歩距離順で再計算しています'
+  // =========================================================================
+  // 10. REGION TABS, TACTILE SWITCHES & GPS
+  // =========================================================================
+  function syncRegionPills() {
+    document.querySelectorAll('.region-pill').forEach((btn) => {
+      btn.classList.toggle('active', btn.getAttribute('data-region') === state.region);
     });
   }
 
-  function resetFilters() {
+  function switchRegion(regionId) {
+    const preset = REGION_PRESETS[regionId] || REGION_PRESETS.all;
+    state.region = regionId;
+    state.savedOnly = false;
+    dom.savedOnlyBtn?.classList.remove('bg-moka-900', 'text-cream-50');
+    if (regionId !== 'all') {
+      state.lat = preset.lat;
+      state.lng = preset.lng;
+      drawOriginMarker();
+    }
+    syncRegionPills();
+    closeSheet();
+
+    showSkeleton(true);
+    if (map) map.flyTo([preset.lat, preset.lng], preset.zoom, { duration: 0.65 });
+    setTimeout(() => {
+      applyClientFiltersAndRender();
+      showSkeleton(false);
+      if (regionId !== 'all') {
+        loadOsmCafesAround(preset.lat, preset.lng, 1600, true);
+      }
+    }, 240);
+  }
+
+  function resetAllFilters() {
+    state.region = 'all';
     state.category = 'all';
-    state.filter = '';
+    state.powerOnly = false;
+    state.wifiOnly = false;
+    state.savedOnly = false;
     state.query = '';
-    state.savedOnlyMode = false;
-    if (el.searchInput) el.searchInput.value = '';
-    el.clearSearchBtn?.classList.add('hidden');
-
-    document.querySelectorAll('.cat-pill').forEach((b) => {
-      const on = b.getAttribute('data-cat') === 'all';
-      b.className = `cat-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
-        on ? 'border-sumi-900 bg-sumi-900 text-washi-50' : 'border-sumi-900/25 bg-washi-50 text-sumi-800 hover:border-sumi-900'
-      }`;
-    });
-    document.querySelectorAll('.cond-pill').forEach((b) => {
-      b.classList.remove('bg-brass-300/75', 'border-sumi-900', 'font-bold');
-      b.classList.add('bg-washi-100', 'border-sumi-900/20');
-    });
-
-    loadSpots({ showSkeleton: true });
+    if (dom.searchInput) dom.searchInput.value = '';
+    dom.clearQBtn?.classList.add('hidden');
+    dom.togglePowerBtn?.classList.remove('is-on-power');
+    dom.toggleWifiBtn?.classList.remove('is-on-wifi');
+    document.querySelectorAll('.cat-chip').forEach((c) => c.classList.remove('is-active'));
+    syncRegionPills();
+    applyClientFiltersAndRender();
   }
 
-  function initControls() {
-    // Kansai Rail Buttons
-    document.querySelectorAll('.rail-area-btn').forEach((btn) => {
+  function initButtons() {
+    document.querySelectorAll('.region-pill').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-area');
-        if (id) jumpToKansaiArea(id);
+        const r = btn.getAttribute('data-region') || 'all';
+        switchRegion(r);
       });
     });
 
-    // Category Pills
-    document.querySelectorAll('.cat-pill').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        state.savedOnlyMode = false;
-        state.category = btn.getAttribute('data-cat') || 'all';
-        document.querySelectorAll('.cat-pill').forEach((b) => {
-          const on = b === btn;
-          b.className = `cat-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
-            on ? 'border-sumi-900 bg-sumi-900 text-washi-50' : 'border-sumi-900/25 bg-washi-50 text-sumi-800 hover:border-sumi-900'
-          }`;
+    dom.togglePowerBtn?.addEventListener('click', () => {
+      state.powerOnly = !state.powerOnly;
+      dom.togglePowerBtn.classList.toggle('is-on-power', state.powerOnly);
+      dom.togglePowerBtn.setAttribute('aria-pressed', String(state.powerOnly));
+      applyClientFiltersAndRender();
+      showToast({
+        title: state.powerOnly ? 'コンセントがある店舗のみに絞り込みました' : 'コンセント絞り込みを解除しました'
+      });
+    });
+
+    dom.toggleWifiBtn?.addEventListener('click', () => {
+      state.wifiOnly = !state.wifiOnly;
+      dom.toggleWifiBtn.classList.toggle('is-on-wifi', state.wifiOnly);
+      dom.toggleWifiBtn.setAttribute('aria-pressed', String(state.wifiOnly));
+      applyClientFiltersAndRender();
+      showToast({
+        title: state.wifiOnly ? 'Wi-Fiがある店舗のみに絞り込みました' : 'Wi-Fi絞り込みを解除しました'
+      });
+    });
+
+    document.querySelectorAll('.cat-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const c = chip.getAttribute('data-cat') || 'all';
+        state.category = state.category === c ? 'all' : c;
+        document.querySelectorAll('.cat-chip').forEach((el) => {
+          el.classList.toggle('is-active', el.getAttribute('data-cat') === state.category);
         });
-        loadSpots({ showSkeleton: true });
+        applyClientFiltersAndRender();
       });
     });
 
-    // Condition Pills
-    document.querySelectorAll('.cond-pill').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const f = btn.getAttribute('data-filter') || '';
-        state.filter = state.filter === f ? '' : f;
-        document.querySelectorAll('.cond-pill').forEach((b) => {
-          const on = b.getAttribute('data-filter') === state.filter;
-          b.classList.toggle('bg-brass-300/75', on);
-          b.classList.toggle('border-sumi-900', on);
-          b.classList.toggle('font-bold', on);
-          b.classList.toggle('bg-washi-100', !on);
-          b.classList.toggle('border-sumi-900/20', !on);
-        });
-        loadSpots({ showSkeleton: true });
+    dom.sortSelect?.addEventListener('change', () => {
+      state.sort = dom.sortSelect.value;
+      applyClientFiltersAndRender();
+    });
+
+    dom.savedOnlyBtn?.addEventListener('click', () => {
+      state.savedOnly = !state.savedOnly;
+      dom.savedOnlyBtn.classList.toggle('bg-moka-900', state.savedOnly);
+      dom.savedOnlyBtn.classList.toggle('text-cream-50', state.savedOnly);
+      applyClientFiltersAndRender();
+      showToast({
+        title: state.savedOnly ? `保存済み ${state.savedIds.size}軒を表示中` : '全スポット表示に戻しました'
       });
     });
 
-    // Sort Select
-    el.sortSelect?.addEventListener('change', () => {
-      state.sort = el.sortSelect.value;
-      loadSpots({ showSkeleton: true, minSkeletonMs: 280 });
-    });
-
-    // Deck Manual Refresh
-    document.getElementById('deck-refresh-btn')?.addEventListener('click', async () => {
-      const icon = document.getElementById('deck-refresh-svg');
-      icon?.classList.add('rotate-180');
-      state.jitterSeed += 1;
-      await loadSpots({ showSkeleton: true, minSkeletonMs: 440 });
-      setTimeout(() => icon?.classList.remove('rotate-180'), 450);
-      showToast({ iconSvg: SVG.cup, title: '関西スポットの空席・回線状況を更新しました', accent: 'moss' });
-    });
-
-    // GPS Locate Me (Falls back gracefully to Osaka Umeda/Kitahama if outside Kansai or denied)
-    el.locateMeBtn?.addEventListener('click', () => {
+    document.getElementById('gps-btn')?.addEventListener('click', () => {
       if (!navigator.geolocation) {
-        jumpToKansaiArea('kitahama');
+        switchRegion('umeda');
         return;
       }
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           state.lat = pos.coords.latitude;
           state.lng = pos.coords.longitude;
-          state.areaLabel = 'GPS現在地周辺';
-          if (el.areaCaption) el.areaCaption.textContent = 'GPS測位完了 — 現在地から近い順に表示中';
-          renderOriginBeacon();
-          if (map) map.flyTo([state.lat, state.lng], 14, { duration: 0.8 });
-          loadSpots({ showSkeleton: true });
-          showToast({ iconSvg: SVG.pin, title: '現在地座標を取得しました', accent: 'moss' });
+          state.region = 'all';
+          syncRegionPills();
+          drawOriginMarker();
+          if (map) map.flyTo([state.lat, state.lng], 15, { duration: 0.7 });
+          applyClientFiltersAndRender();
+          loadOsmCafesAround(state.lat, state.lng, 1500, true);
+          showToast({ title: '現在地から近い順に並べ替えました' });
         },
         () => {
-          // Graceful fallback to Osaka Nakanoshima / Umeda midpoint
-          state.lat = 34.6985;
-          state.lng = 135.5028;
-          state.areaLabel = '大阪・中之島〜梅田中間（デモ現在地）';
-          if (el.areaCaption) el.areaCaption.textContent = '大阪・中之島〜梅田 — デモ基準座標でスキャン中';
-          renderOriginBeacon();
-          if (map) map.flyTo([state.lat, state.lng], 14, { duration: 0.7 });
-          loadSpots({ showSkeleton: true });
-          showToast({
-            iconSvg: SVG.pin,
-            title: '大阪キタ（中之島・梅田）を基準地に設定しました',
-            message: '位置情報オフ環境でも全機能をお使いいただけます'
-          });
+          state.lat = 34.7025;
+          state.lng = 135.4988;
+          drawOriginMarker();
+          if (map) map.flyTo([state.lat, state.lng], 15, { duration: 0.65 });
+          applyClientFiltersAndRender();
+          showToast({ title: '大阪・梅田周辺を基準位置に設定しました' });
         },
         { timeout: 4500 }
       );
     });
 
-    // Map Tone Switcher (Warm Washi vs Standard Raw OpenStreetMap)
-    document.getElementById('map-tone-btn')?.addEventListener('click', () => {
-      state.washiMapTone = !state.washiMapTone;
-      el.mapContainer?.classList.toggle('washi-map-filter', state.washiMapTone);
-      el.mapContainer?.classList.toggle('raw-osm-filter', !state.washiMapTone);
-      const lbl = document.getElementById('map-tone-label');
-      if (lbl) lbl.textContent = state.washiMapTone ? '和紙マップ' : '標準OSM';
-      showToast({
-        iconSvg: SVG.pin,
-        title: state.washiMapTone ? '和紙トーン地図に切り替えました' : '標準OpenStreetMap配色に切り替えました'
-      });
+    dom.osmExpandBtn?.addEventListener('click', () => {
+      if (!map) return;
+      const c = map.getCenter();
+      loadOsmCafesAround(c.lat, c.lng, 2200, false);
     });
 
-    // 650m Walk Circle Toggle
-    document.getElementById('walk-ring-btn')?.addEventListener('click', (e) => {
-      state.walkRingVisible = !state.walkRingVisible;
-      e.currentTarget.classList.toggle('bg-brass-300/70', state.walkRingVisible);
-      renderOriginBeacon();
+    document.getElementById('map-style-btn')?.addEventListener('click', () => {
+      state.cafeMapTone = !state.cafeMapTone;
+      dom.mapEl?.classList.toggle('cafe-map-tone', state.cafeMapTone);
+      showToast({ title: state.cafeMapTone ? 'ラテベージュ地図トーンに変更' : '標準OpenStreetMap配色に変更' });
     });
 
-    // Live OSM Overpass Button
-    document.getElementById('osm-live-btn')?.addEventListener('click', toggleOsmLiveCafes);
-
-    // Saved Passbook Toggle
-    document.getElementById('saved-filter-btn')?.addEventListener('click', (e) => {
-      state.savedOnlyMode = !state.savedOnlyMode;
-      e.currentTarget.classList.toggle('bg-roast-500', state.savedOnlyMode);
-      e.currentTarget.classList.toggle('text-washi-50', state.savedOnlyMode);
-      renderDeckAndMap();
-      showToast({
-        iconSvg: SVG.bookmarkFilled,
-        title: state.savedOnlyMode ? `保存済みスポット (${state.savedIds.size}件) を表示中` : '全スポット表示に戻しました',
-        accent: 'roast'
-      });
-    });
-
-    // Playful Roast Recommendation Diagnosis on Brand Cup Click
-    document.getElementById('brand-roast-fortune-btn')?.addEventListener('click', (e) => {
-      const notes = [
-        '本日のおすすめ席: 北浜のリバーサイド東向きカウンター。浅煎りエチオピアと相性抜群の集中日和です。',
-        '本日のおすすめ席: 京都・烏丸御池の坪庭が見える杉一枚板デスク。設計や執筆が深く進む一日。',
-        '本日のおすすめ席: 中崎町の木造長屋2階ロフト。静かな午後にアイデアがまとまる予感。'
-      ];
-      const msg = notes[Math.floor(Math.random() * notes.length)];
-      spawnVectorParticles(e.clientX, e.clientY);
-      showToast({
-        iconSvg: SVG.cup,
-        title: '本日の関西ワークロフト診断',
-        message: msg,
-        duration: 4600
-      });
-    });
-
-    // Portrait hint dismiss
-    document.getElementById('dismiss-portrait-hint')?.addEventListener('click', () => {
-      document.getElementById('portrait-hint')?.remove();
+    // Mobile list collapse toggle
+    document.getElementById('mobile-sheet-toggle')?.addEventListener('click', () => {
+      state.mobileListHidden = !state.mobileListHidden;
+      dom.explorerIsland?.classList.toggle('translate-y-[82%]', state.mobileListHidden);
+      const lbl = document.getElementById('mobile-toggle-label');
+      if (lbl) lbl.textContent = state.mobileListHidden ? 'リストを開く' : '地図を広く見る';
     });
   }
 
-  // Web Audio API Warm Cafe Room Murmur
-  function initAmbienceSynth() {
-    const btn = document.getElementById('ambience-btn');
-    if (!btn) return;
-
-    btn.addEventListener('click', () => {
-      if (!state.ambienceOn) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        if (!state.audioCtx) state.audioCtx = new AC();
-        const ctx = state.audioCtx;
-        if (ctx.state === 'suspended') ctx.resume();
-
-        const len = 2 * ctx.sampleRate;
-        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
-        const out = buf.getChannelData(0);
-        let last = 0;
-        for (let i = 0; i < len; i++) {
-          const w = Math.random() * 2 - 1;
-          out[i] = (last + 0.02 * w) / 1.02;
-          last = out[i];
-          out[i] *= 0.16;
-        }
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.loop = true;
-
-        const lp = ctx.createBiquadFilter();
-        lp.type = 'lowpass';
-        lp.frequency.value = 380;
-
-        const gain = ctx.createGain();
-        gain.gain.value = 0.16;
-
-        src.connect(lp);
-        lp.connect(gain);
-        gain.connect(ctx.destination);
-        src.start(0);
-
-        state.ambienceNodes = [src, gain];
-        state.ambienceOn = true;
-        btn.classList.add('bg-sumi-900', 'text-washi-50');
-        showToast({
-          iconSvg: SVG.cup,
-          title: '喫茶室の環境音アンビエントを再生中',
-          message: '穏やかなローパス・ルームノイズで集中をサポートします',
-          accent: 'moss'
-        });
-      } else {
-        state.ambienceNodes.forEach((n) => {
-          try {
-            if (n.stop) n.stop();
-            n.disconnect();
-          } catch (_) {}
-        });
-        state.ambienceNodes = [];
-        state.ambienceOn = false;
-        btn.classList.remove('bg-sumi-900', 'text-washi-50');
-        showToast({ iconSvg: SVG.cup, title: '環境音アンビエントを停止しました' });
-      }
-    });
-  }
-
-  // 25-Min Focus Timer Drawer
-  function initFocusTimer() {
-    const drawer = document.getElementById('pomo-drawer');
-    const openBtn = document.getElementById('pomo-popover-btn');
-    const closeBtn = document.getElementById('pomo-close-btn');
-    const toggleBtn = document.getElementById('pomo-toggle-btn');
-    const resetBtn = document.getElementById('pomo-reset-btn');
-    const display = document.getElementById('pomo-timer-display');
-    const status = document.getElementById('pomo-status-text');
-
-    const drawClock = () => {
-      const m = String(Math.floor(state.pomoSeconds / 60)).padStart(2, '0');
-      const s = String(state.pomoSeconds % 60).padStart(2, '0');
-      if (display) display.textContent = `${m}:${s}`;
-    };
-
-    openBtn?.addEventListener('click', () => {
-      drawer?.classList.toggle('hidden');
-    });
-    closeBtn?.addEventListener('click', () => {
-      drawer?.classList.add('hidden');
-    });
-
-    toggleBtn?.addEventListener('click', () => {
-      state.pomoRunning = !state.pomoRunning;
-      if (state.pomoRunning) {
-        toggleBtn.textContent = 'PAUSE';
-        if (status) status.textContent = 'BREWING FOCUS...';
-        state.pomoInterval = setInterval(() => {
-          if (state.pomoSeconds > 0) {
-            state.pomoSeconds -= 1;
-            drawClock();
-          } else {
-            clearInterval(state.pomoInterval);
-            state.pomoRunning = false;
-            toggleBtn.textContent = 'START';
-            state.beans += 25;
-            animateNumber(el.beanPoints, state.beans);
-            showToast({
-              iconSvg: SVG.stamp,
-              title: '25分間の集中セッションが完了しました',
-              message: 'Roast Stamp +25 を記録しました',
-              accent: 'moss'
-            });
-          }
-        }, 1000);
-      } else {
-        clearInterval(state.pomoInterval);
-        toggleBtn.textContent = 'RESUME';
-        if (status) status.textContent = 'PAUSED';
-      }
-    });
-
-    resetBtn?.addEventListener('click', () => {
-      clearInterval(state.pomoInterval);
-      state.pomoRunning = false;
-      state.pomoSeconds = 25 * 60;
-      drawClock();
-      if (toggleBtn) toggleBtn.textContent = 'START';
-      if (status) status.textContent = 'ROAST FOCUS TIMER';
-    });
-  }
-
-  // Subtle Tactile Cursor Follower (Desktop Only, Zero Emojis)
-  function initCraftCursor() {
-    const cur = document.getElementById('craft-cursor');
-    if (!cur || window.matchMedia('(pointer: coarse)').matches) return;
-
-    let tx = -100;
-    let ty = -100;
-    let cx = -100;
-    let cy = -100;
-
-    window.addEventListener('mousemove', (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
-      cur.classList.remove('opacity-0');
-
-      const onCard = e.target.closest('.spot-index-card');
-      const onPin = e.target.closest('.craft-pin');
-
-      if (onCard) {
-        cur.textContent = 'SWIPE';
-        cur.style.width = '46px';
-        cur.style.height = '22px';
-        cur.style.borderRadius = '999px';
-        cur.style.backgroundColor = 'rgba(234, 210, 150, 0.85)';
-      } else if (onPin) {
-        cur.textContent = 'OPEN';
-        cur.style.width = '42px';
-        cur.style.height = '22px';
-        cur.style.borderRadius = '999px';
-        cur.style.backgroundColor = 'rgba(252, 249, 244, 0.92)';
-      } else {
-        cur.textContent = '';
-        cur.style.width = '22px';
-        cur.style.height = '22px';
-        cur.style.borderRadius = '999px';
-        cur.style.backgroundColor = 'rgba(212, 178, 103, 0.18)';
-      }
-    });
-
-    function step() {
-      cx += (tx - cx) * 0.24;
-      cy += (ty - cy) * 0.24;
-      cur.style.transform = `translate3d(${cx - cur.offsetWidth / 2}px, ${cy - cur.offsetHeight / 2}px, 0)`;
-      requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
-
-  // =========================================================
+  // =========================================================================
   // BOOTSTRAP
-  // =========================================================
-  document.addEventListener('DOMContentLoaded', async () => {
-    initKineticTypography();
-    initCraftCursor();
+  // =========================================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    updateSavedBadge();
+    initKineticAndMascot();
     initMap();
-    initHudSparkBars();
     initAutocomplete();
     initPullToRefresh();
-    initBottomSheetDrag();
-    initControls();
-    initAmbienceSynth();
-    initFocusTimer();
-
-    await loadSpots({ showSkeleton: true, minSkeletonMs: 520 });
-
-    setTimeout(() => {
-      showToast({
-        iconSvg: SVG.cup,
-        title: 'NomaLoft KANSAI — 大阪・京都・神戸フィールド版',
-        message: '左レールで街を切替、カードの左右スワイプやピン選択で詳細図鑑が開きます。'
-      });
-    }, 600);
+    initBottomSheetGestures();
+    initButtons();
+    initialFetchSpots();
   });
 })();

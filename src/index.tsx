@@ -1,276 +1,164 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { WORK_SPOTS, KANSAI_AREAS, AUTOCOMPLETE_KEYWORDS, WorkSpot } from './data/spots'
+import { KANSAI_SPOTS, KANSAI_REGIONS, QUICK_SUGGESTIONS, KansaiSpot } from './data/spots'
 
 const app = new Hono()
 
 app.use('/api/*', cors())
 
-function calcDistanceMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000
-  const toRad = (deg: number) => (deg * Math.PI) / 180
-  const dLat = toRad(lat2 - lat1)
-  const dLng = toRad(lng2 - lng1)
+  const rad = (d: number) => (d * Math.PI) / 180
+  const dLat = rad(lat2 - lat1)
+  const dLng = rad(lng2 - lng1)
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return Math.round(R * c)
+    Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
-function enrichSpot(spot: WorkSpot, userLat: number, userLng: number, jitterSeed: number) {
-  const distanceMeters = calcDistanceMeters(userLat, userLng, spot.lat, spot.lng)
-  const walkMinFromHere = Math.max(1, Math.round(distanceMeters / 80))
-
-  let seatsAvailable = spot.seatsAvailable
-  let crowdLevel = spot.crowdLevel
-  let wifiMbps = spot.wifiMbps
-
-  if (jitterSeed > 0) {
-    const hash = (spot.id.charCodeAt(6) + jitterSeed * 3) % 7
-    const deltaSeats = hash - 3
-    seatsAvailable = Math.max(2, Math.min(spot.totalSeats - 2, spot.seatsAvailable + deltaSeats))
-    crowdLevel = Math.max(14, Math.min(86, Math.round(((spot.totalSeats - seatsAvailable) / spot.totalSeats) * 100)))
-    wifiMbps = Math.max(140, spot.wifiMbps + (hash - 3) * 9)
-  }
-
-  const nomadScore = Math.round(
-    spot.outletRatio * 0.25 +
-      spot.wifiStability * 0.25 +
-      spot.chairComfort * 0.2 +
-      spot.coffeeScore * 0.15 +
-      (100 - crowdLevel) * 0.15
-  )
+function enrichSpot(s: KansaiSpot, lat: number, lng: number) {
+  const distanceMeters = haversineMeters(lat, lng, s.lat, s.lng)
+  const walkFromHere = Math.max(1, Math.round(distanceMeters / 80))
+  const powerScore = s.power === 'yes_all' ? 100 : s.power === 'yes_part' ? 78 : 20
+  const wifiScore = s.wifi === 'yes_free' ? 95 : s.wifi === 'yes_reg' ? 75 : 15
+  const workIndex = Math.round(powerScore * 0.3 + wifiScore * 0.3 + s.deskScore * 0.22 + s.quietScore * 0.18)
 
   return {
-    ...spot,
-    seatsAvailable,
-    crowdLevel,
-    wifiMbps,
+    ...s,
     distanceMeters,
-    walkMinFromHere,
-    nomadScore
+    walkFromHere,
+    powerScore,
+    wifiScore,
+    workIndex
   }
 }
 
-// GET /api/spots — Kansai spots with distance, filters, and telemetry summary
+// GET /api/spots — Returns enriched Kansai spots + real-time telemetry breakdown
 app.get('/api/spots', (c) => {
-  // Default: Osaka Kitahama / Nakanoshima center
-  const lat = parseFloat(c.req.query('lat') || '34.6918')
-  const lng = parseFloat(c.req.query('lng') || '135.5064')
+  const lat = parseFloat(c.req.query('lat') || '34.6965')
+  const lng = parseFloat(c.req.query('lng') || '135.5015')
+  const area = c.req.query('area') || 'all'
   const category = c.req.query('category') || 'all'
-  const filter = c.req.query('filter') || ''
+  const powerOnly = c.req.query('power') === '1'
+  const wifiOnly = c.req.query('wifi') === '1'
   const q = (c.req.query('q') || '').trim().toLowerCase()
   const sort = c.req.query('sort') || 'distance'
-  const jitter = parseInt(c.req.query('jitter') || '0', 10)
 
-  let results = WORK_SPOTS.map((s) => enrichSpot(s, lat, lng, jitter))
+  let list = KANSAI_SPOTS.map((s) => enrichSpot(s, lat, lng))
+
+  if (area !== 'all') {
+    list = list.filter((s) => s.areaId === area)
+  }
 
   if (category !== 'all') {
     if (category === 'cafe') {
-      results = results.filter(
-        (s) => s.category === 'cafe' || s.category === 'roastery' || s.category === 'library_cafe'
-      )
+      list = list.filter((s) => s.category === 'cafe' || s.category === 'roastery' || s.category === 'book_cafe')
     } else {
-      results = results.filter((s) => s.category === category)
+      list = list.filter((s) => s.category === category)
     }
   }
 
-  if (filter === 'power90') {
-    results = results.filter((s) => s.outletRatio >= 90)
-  } else if (filter === 'wifi300') {
-    results = results.filter((s) => s.wifiMbps >= 300)
-  } else if (filter === 'call_ok') {
-    results = results.filter((s) => s.callAllowed === 'ok' || s.callAllowed === 'booth_only')
-  } else if (filter === 'quiet') {
-    results = results.filter((s) => s.quietness >= 88)
-  } else if (filter === 'empty') {
-    results = results.filter((s) => s.crowdLevel <= 36)
+  if (powerOnly) {
+    list = list.filter((s) => s.power === 'yes_all' || s.power === 'yes_part')
+  }
+
+  if (wifiOnly) {
+    list = list.filter((s) => s.wifi === 'yes_free' || s.wifi === 'yes_reg')
   }
 
   if (q) {
-    results = results.filter((s) => {
-      const hay = [
-        s.name,
-        s.nameEn,
-        s.area,
-        s.station,
-        s.categoryLabel,
-        s.catchcopy,
-        s.description,
-        s.signatureDrink,
-        ...s.tags
-      ]
-        .join(' ')
-        .toLowerCase()
+    list = list.filter((s) => {
+      const hay = `${s.name} ${s.areaLabel} ${s.station} ${s.categoryLabel} ${s.powerDetail} ${s.wifiDetail} ${s.note}`.toLowerCase()
       return hay.includes(q)
     })
   }
 
   if (sort === 'distance') {
-    results.sort((a, b) => a.distanceMeters - b.distanceMeters)
-  } else if (sort === 'wifi') {
-    results.sort((a, b) => b.wifiMbps - a.wifiMbps)
-  } else if (sort === 'empty') {
-    results.sort((a, b) => a.crowdLevel - b.crowdLevel)
+    list.sort((a, b) => a.distanceMeters - b.distanceMeters)
   } else if (sort === 'score') {
-    results.sort((a, b) => b.nomadScore - a.nomadScore)
+    list.sort((a, b) => b.workIndex - a.workIndex)
+  } else if (sort === 'speed') {
+    list.sort((a, b) => b.wifiSpeedEst - a.wifiSpeedEst)
   }
 
-  const avgWifi = results.length
-    ? Math.round(results.reduce((acc, s) => acc + s.wifiMbps, 0) / results.length)
-    : 0
-  const totalOpenSeats = results.reduce((acc, s) => acc + s.seatsAvailable, 0)
-  const avgPower = results.length
-    ? Math.round(results.reduce((acc, s) => acc + s.outletRatio, 0) / results.length)
-    : 0
+  const total = list.length
+  const withPower = list.filter((s) => s.power === 'yes_all' || s.power === 'yes_part').length
+  const withWifi = list.filter((s) => s.wifi === 'yes_free' || s.wifi === 'yes_reg').length
+  const powerPct = total ? Math.round((withPower / total) * 100) : 0
+  const wifiPct = total ? Math.round((withWifi / total) * 100) : 0
 
   return c.json({
-    spots: results,
-    areas: KANSAI_AREAS,
-    summary: {
-      count: results.length,
-      avgWifi,
-      totalOpenSeats,
-      avgPower,
-      updatedAt: new Date().toISOString()
+    spots: list,
+    regions: KANSAI_REGIONS,
+    stats: {
+      total,
+      withPower,
+      withWifi,
+      powerPct,
+      wifiPct
     }
   })
 })
 
-// GET /api/osm-nearby — Free OpenStreetMap Overpass API live cafe/coworking query in Kansai
-app.get('/api/osm-nearby', async (c) => {
-  const lat = parseFloat(c.req.query('lat') || '34.6918')
-  const lng = parseFloat(c.req.query('lng') || '135.5064')
-  const radius = Math.min(1500, parseInt(c.req.query('radius') || '900', 10))
-
-  const overpassQuery = `[out:json][timeout:8];(node["amenity"="cafe"](around:${radius},${lat},${lng});node["amenity"="coworking_space"](around:${radius},${lat},${lng}););out body 18;`
-
-  const endpoints = [
-    'https://overpass-api.de/api/interpreter',
-    'https://overpass.kumi.systems/api/interpreter'
-  ]
-
-  for (const url of endpoints) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'NomaLoftKansai/1.0'
-        },
-        body: `data=${encodeURIComponent(overpassQuery)}`,
-        signal: AbortSignal.timeout(3500)
-      })
-
-      if (!res.ok) continue
-
-      const json = (await res.json()) as {
-        elements?: Array<{
-          id: number
-          lat: number
-          lon: number
-          tags?: Record<string, string>
-        }>
-      }
-
-      const nodes = (json.elements || [])
-        .filter((el) => el.tags && (el.tags['name:ja'] || el.tags.name))
-        .slice(0, 16)
-        .map((el) => ({
-          id: `osm-${el.id}`,
-          name: el.tags?.['name:ja'] || el.tags?.name || 'Cafe',
-          lat: el.lat,
-          lng: el.lon,
-          type: el.tags?.amenity === 'coworking_space' ? 'coworking' : 'cafe',
-          wifi: el.tags?.internet_access === 'wlan' || el.tags?.internet_access === 'yes',
-          openingHours: el.tags?.opening_hours || '営業時間情報なし'
-        }))
-
-      return c.json({ osmNodes: nodes, source: 'overpass' })
-    } catch {
-      continue
-    }
-  }
-
-  return c.json({ osmNodes: [], source: 'offline_graceful' })
-})
-
-// GET /api/autocomplete
+// GET /api/autocomplete — Fast suggestion engine for stations, cafes, brands, and Kansai areas
 app.get('/api/autocomplete', (c) => {
   const q = (c.req.query('q') || '').trim().toLowerCase()
 
-  const spotSuggestions = WORK_SPOTS.filter((s) => {
-    if (!q) return true
+  const matchedSpots = KANSAI_SPOTS.filter((s) => {
+    if (!q) return false
     return (
       s.name.toLowerCase().includes(q) ||
-      s.nameEn.toLowerCase().includes(q) ||
-      s.area.toLowerCase().includes(q) ||
       s.station.toLowerCase().includes(q) ||
-      s.tags.some((t) => t.toLowerCase().includes(q))
+      s.areaLabel.toLowerCase().includes(q)
     )
   })
-    .slice(0, 5)
+    .slice(0, 6)
     .map((s) => ({
       id: s.id,
-      type: 'spot',
+      kind: 'spot',
       label: s.name,
-      sub: `${s.area} / ${s.station} 徒歩${s.walkMinutes}分 / ${s.wifiMbps}Mbps`,
-      query: s.name,
+      sub: `${s.areaLabel} · ${s.station} · 電源:${s.power === 'no' ? 'なし' : 'あり'} / Wi-Fi:${s.wifi === 'no' ? 'なし' : 'あり'}`,
       spotId: s.id,
-      iconType: s.category === 'coworking' ? 'desk' : 'cup'
+      query: s.name
     }))
 
-  const keywordSuggestions = AUTOCOMPLETE_KEYWORDS.filter((k) => {
+  const matchedQuick = QUICK_SUGGESTIONS.filter((item) => {
     if (!q) return true
-    return k.label.toLowerCase().includes(q) || k.query.toLowerCase().includes(q)
+    return item.label.toLowerCase().includes(q) || item.query.toLowerCase().includes(q)
   })
-    .slice(0, 5)
-    .map((k, idx) => ({
-      id: `kw-${idx}`,
-      type: k.type,
-      areaId: k.areaId || '',
-      label: k.label,
-      sub: k.type === 'area' ? '関西エリア座標へマップ移動' : 'ワーク環境フィルター検索',
-      query: k.query,
-      iconType: k.iconType
+    .slice(0, q ? 4 : 7)
+    .map((item, i) => ({
+      id: `q-${i}`,
+      kind: item.type,
+      label: item.label,
+      sub: item.type === 'area' ? 'エリアへマップ移動' : '条件で絞り込み',
+      areaId: item.areaId,
+      query: item.query
     }))
 
   return c.json({
-    suggestions: [...spotSuggestions, ...keywordSuggestions].slice(0, 8)
-  })
-})
-
-// POST /api/checkin
-app.post('/api/checkin', async (c) => {
-  const body = await c.req.json().catch(() => ({}))
-  const spotId = body.spotId || 'spot-kitahama-river'
-  const spot = WORK_SPOTS.find((s) => s.id === spotId) || WORK_SPOTS[0]
-  return c.json({
-    ok: true,
-    spotName: spot.name,
-    beansEarned: 15,
-    message: `${spot.name} にチェックインを記録しました（Roast Stamp +15）`
+    items: [...matchedSpots, ...matchedQuick].slice(0, 8)
   })
 })
 
 app.get('/favicon.ico', (c) => c.redirect('/static/favicon.svg', 301))
 
-// Main Horizontal Widescreen App Shell (Zero Default Emojis)
+// Main Full-Bleed Spatial Landscape Web App (Zero Default Emojis)
 app.get('/', (c) => {
   return c.html(`<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NomaLoft KANSAI — 関西ワークカフェ＆コワーキング空間図鑑</title>
-  <meta name="description" content="大阪・京都・神戸のPCワーカー向け電源カフェ・コワーキングスペースを無料OpenStreetMap上に可視化する横画面フィールドガイド。" />
+  <title>NomaLoft — 関西カフェ・コワーキング電源＆Wi-Fiマップ</title>
+  <meta name="description" content="大阪・京都・神戸・阪神・奈良の実在カフェ＆コワーキングスペースのコンセント有無・Wi-Fi有無・公式サイト・SNSを地図上で即座に確認できるPCワーカー向けマップ。" />
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
 
-  <!-- Editorial & Technical Typography -->
+  <!-- Typography: Plus Jakarta Sans, Fraunces, Zen Maru Gothic, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Space+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -279,455 +167,339 @@ app.get('/', (c) => {
       theme: {
         extend: {
           colors: {
-            washi: {
-              50: '#FCF9F4',
-              100: '#F5EFE6',
-              200: '#EAE0D0',
-              300: '#DCD0BC',
-              400: '#C5B49B',
+            cream: {
+              50: '#FFFDFA',
+              100: '#FAF5ED',
+              200: '#F2E8D9',
+              300: '#E5D5BE',
+              400: '#CFB899',
             },
-            sumi: {
-              600: '#6E6259',
-              700: '#4F443C',
-              800: '#352C26',
-              900: '#221B17',
+            moka: {
+              500: '#7D6A5B',
+              700: '#4A3B31',
+              800: '#332720',
+              900: '#211813',
             },
-            roast: {
-              400: '#D4795E',
-              500: '#C06044',
-              600: '#A44B31',
+            caramel: {
+              400: '#E2875A',
+              500: '#CA6B3E',
             },
-            moss: {
-              400: '#6C8F73',
-              500: '#4E7255',
+            sage: {
+              400: '#6FA07A',
+              500: '#497E56',
+              600: '#366341',
             },
-            brass: {
-              300: '#EAD296',
-              400: '#D4B267',
-              500: '#B58F44',
+            honey: {
+              200: '#F9E6B3',
+              300: '#F2D283',
             }
           },
           fontFamily: {
-            serif: ['"Fraunces"', '"Zen Maru Gothic"', 'serif'],
-            sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
-            round: ['"Zen Maru Gothic"', 'sans-serif'],
-            mono: ['"Space Mono"', 'monospace'],
+            display: ['"Fraunces"', '"Zen Maru Gothic"', 'serif'],
+            round: ['"Zen Maru Gothic"', '"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
           }
         }
       }
     }
   </script>
 
-  <!-- Free OpenStreetMap + Leaflet -->
+  <!-- Free OpenStreetMap + Leaflet + MarkerCluster -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Custom Architectural & Motion Styles -->
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
-<body class="bg-washi-100 text-sumi-900 font-sans antialiased selection:bg-brass-300 selection:text-sumi-900 h-screen w-screen overflow-hidden select-none">
+<body class="h-screen w-screen overflow-hidden bg-cream-200 text-moka-900 font-round antialiased select-none">
 
-  <!-- Subtle Tactile Washi Paper Grain -->
-  <div class="washi-grain pointer-events-none fixed inset-0 z-50"></div>
+  <!-- =========================================================================
+       [LAYER 0] FULL-BLEED 100vw x 100vh FREE OPENSTREETMAP CANVAS
+       ========================================================================= -->
+  <main id="map-viewport" class="fixed inset-0 z-0">
+    <div id="nomaloft-map" class="w-full h-full cafe-map-tone"></div>
+  </main>
 
-  <!-- Custom Minimal Line-Art Cursor Follower (Desktop) -->
-  <div id="craft-cursor" class="hidden lg:flex fixed top-0 left-0 w-7 h-7 rounded-full border border-sumi-900/45 bg-brass-300/20 pointer-events-none z-[9998] items-center justify-center text-[10px] font-mono font-bold tracking-tighter text-sumi-900 opacity-0 transition-opacity duration-150"></div>
+  <!-- =========================================================================
+       [LAYER 1] TOP FLOATING CAPSULE BAR (Area Tabs + Power/Wi-Fi Switches + Infographic Rings)
+       ========================================================================= -->
+  <header id="top-floating-bar" class="fixed top-3.5 left-3.5 sm:left-[428px] right-3.5 z-30 pointer-events-none flex flex-wrap items-center justify-between gap-2.5">
 
-  <!-- Toast Stack (Top-Right over Map Stage) -->
-  <aside id="toast-container" aria-live="polite" class="fixed top-4 right-4 w-80 sm:w-96 z-[9990] flex flex-col gap-2 pointer-events-none"></aside>
-
-  <!-- Portrait Orientation Gentle Banner (Only on narrow portrait phones) -->
-  <div id="portrait-hint" class="portrait-only-banner fixed bottom-3 left-3 right-3 z-[9500] bg-sumi-900 text-washi-50 px-3.5 py-2 rounded-xl flex items-center justify-between text-xs shadow-lg">
-    <span class="font-medium">横画面（ランドスケープ）表示に最適化されています</span>
-    <button id="dismiss-portrait-hint" type="button" class="font-mono text-[11px] underline ml-2">CLOSE</button>
-  </div>
-
-  <!-- =====================================================================
-       HORIZONTAL WIDESCREEN STUDIO SHELL (100vw x 100vh Split Cockpit)
-       [1] Left Area Index Rail  [2] Editorial Spot Deck  [3] Free OSM Map
-       ===================================================================== -->
-  <div id="app-landscape-shell" class="h-screen w-screen flex flex-row overflow-hidden relative z-10">
-
-    <!-- ================= [1] SLIM KANSAI STUDIO RAIL (LEFT) ================= -->
-    <nav id="studio-rail" aria-label="関西エリア切替ナビゲーション" class="w-16 sm:w-[72px] h-full bg-washi-200/85 border-r border-sumi-900/15 flex flex-col items-center justify-between py-3.5 shrink-0 z-30">
-      <!-- Brand Monogram + Steaming Dripper Line-Art -->
-      <div class="flex flex-col items-center gap-1">
-        <button id="brand-roast-fortune-btn" type="button" class="group w-11 h-11 rounded-2xl bg-washi-50 border border-sumi-900 flex items-center justify-center shadow-[0_2px_0_#221B17] hover:bg-brass-300/60 active:translate-y-0.5 transition-all" title="NomaLoft — クリックで今日の珈琲ドリップ診断">
-          <svg viewBox="0 0 36 36" class="w-6 h-6" fill="none" stroke="#221B17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path class="steam-stroke s-1" d="M14 8 C13 5.5 15.5 4.5 14.5 2.5" stroke="#C06044"/>
-            <path class="steam-stroke s-2" d="M20 9 C19 6.5 21.5 5.5 20.5 3.5" stroke="#B58F44"/>
-            <path d="M8 14 H25 V22 C25 26.8 21.2 30.5 16.5 30.5 C11.8 30.5 8 26.8 8 22 Z" fill="#FCF9F4"/>
-            <path d="M25 16 H28 C30 16 31 17.4 31 19.2 C31 21 30 22.4 28 22.4 H25"/>
-            <circle cx="14" cy="21" r="1" fill="#221B17" stroke="none"/>
-            <circle cx="19" cy="21" r="1" fill="#221B17" stroke="none"/>
-            <path d="M15.2 23.4 Q16.5 24.6 17.8 23.4" stroke-width="1.5"/>
-          </svg>
-        </button>
-        <span class="font-mono text-[9px] font-bold tracking-widest text-sumi-700">KANSAI</span>
-      </div>
-
-      <!-- Kansai District Vertical Index Buttons -->
-      <div class="flex flex-col items-center gap-1.5 my-auto" id="kansai-rail-areas">
-        <button type="button" data-area="kitahama" data-lat="34.6918" data-lng="135.5064" data-label="大阪・北浜 / 中之島" class="rail-area-btn active group w-12 py-2 rounded-xl border border-sumi-900 bg-sumi-900 text-washi-50 flex flex-col items-center gap-0.5 transition-all">
-          <span class="font-mono text-[9px] opacity-75">OSK1</span>
-          <span class="text-[11px] font-bold tracking-tight">北浜</span>
-        </button>
-        <button type="button" data-area="umeda" data-lat="34.7055" data-lng="135.5048" data-label="大阪・梅田 / 中崎町" class="rail-area-btn group w-12 py-2 rounded-xl border border-transparent hover:border-sumi-900/30 bg-washi-50/70 text-sumi-800 flex flex-col items-center gap-0.5 transition-all">
-          <span class="font-mono text-[9px] text-sumi-600">OSK2</span>
-          <span class="text-[11px] font-bold tracking-tight">梅田</span>
-        </button>
-        <button type="button" data-area="horie" data-lat="34.6736" data-lng="135.4952" data-label="大阪・心斎橋 / 堀江" class="rail-area-btn group w-12 py-2 rounded-xl border border-transparent hover:border-sumi-900/30 bg-washi-50/70 text-sumi-800 flex flex-col items-center gap-0.5 transition-all">
-          <span class="font-mono text-[9px] text-sumi-600">OSK3</span>
-          <span class="text-[11px] font-bold tracking-tight">堀江</span>
-        </button>
-        <button type="button" data-area="kyoto" data-lat="35.0086" data-lng="135.7632" data-label="京都・烏丸 / 河原町" class="rail-area-btn group w-12 py-2 rounded-xl border border-transparent hover:border-sumi-900/30 bg-washi-50/70 text-sumi-800 flex flex-col items-center gap-0.5 transition-all">
-          <span class="font-mono text-[9px] text-sumi-600">KYO</span>
-          <span class="text-[11px] font-bold tracking-tight">京都</span>
-        </button>
-        <button type="button" data-area="kobe" data-lat="34.6882" data-lng="135.1912" data-label="神戸・旧居留地 / 元町" class="rail-area-btn group w-12 py-2 rounded-xl border border-transparent hover:border-sumi-900/30 bg-washi-50/70 text-sumi-800 flex flex-col items-center gap-0.5 transition-all">
-          <span class="font-mono text-[9px] text-sumi-600">KOB</span>
-          <span class="text-[11px] font-bold tracking-tight">神戸</span>
-        </button>
-      </div>
-
-      <!-- Bottom Utility Controls (Ambience Synth, Saved Passbook, Focus Timer) -->
-      <div class="flex flex-col items-center gap-2">
-        <!-- Cafe Room Sound Synth -->
-        <button id="ambience-btn" type="button" class="w-10 h-10 rounded-xl bg-washi-50 border border-sumi-900/30 hover:border-sumi-900 flex items-center justify-center text-sumi-800 transition-all" title="喫茶室の環境音アンビエント ON/OFF">
-          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-            <path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 10v4"/>
-          </svg>
-        </button>
-
-        <!-- Saved Passbook Filter Button -->
-        <button id="saved-filter-btn" type="button" class="relative w-10 h-10 rounded-xl bg-washi-50 border border-sumi-900/30 hover:border-sumi-900 flex items-center justify-center text-sumi-800 transition-all" title="保存済みブックマーク一覧">
-          <svg id="rail-bookmark-svg" viewBox="0 0 24 24" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z"/>
-          </svg>
-          <span id="saved-count-badge" class="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-roast-500 text-washi-50 font-mono text-[10px] font-bold flex items-center justify-center">2</span>
-        </button>
-
-        <!-- Focus Pomodoro Popover Trigger + Stamp Points -->
-        <button id="pomo-popover-btn" type="button" class="w-12 py-1.5 rounded-xl bg-sumi-900 text-washi-50 flex flex-col items-center justify-center gap-0.5 hover:bg-roast-500 transition-colors" title="25分珈琲タイマー＆スタンプ帳">
-          <span id="bean-points" class="font-mono text-[11px] font-bold leading-none">45</span>
-          <span class="font-mono text-[8px] tracking-wider opacity-75">STAMP</span>
-        </button>
-      </div>
+    <!-- Area Quick-Switch Capsule -->
+    <nav aria-label="関西エリア切替" class="pointer-events-auto glass-island rounded-full p-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full">
+      <button type="button" data-region="all" class="region-pill active shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">関西全域</button>
+      <button type="button" data-region="umeda" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">梅田・新大阪</button>
+      <button type="button" data-region="kitahama" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">北浜・本町</button>
+      <button type="button" data-region="shinsaibashi" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">心斎橋・難波</button>
+      <button type="button" data-region="tennoji" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">天王寺</button>
+      <button type="button" data-region="kyoto" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">京都</button>
+      <button type="button" data-region="kobe" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">神戸</button>
+      <button type="button" data-region="hanshin" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">西宮・芦屋</button>
+      <button type="button" data-region="nara" class="region-pill shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-all">奈良</button>
     </nav>
 
-    <!-- ================= [2] EDITORIAL SPOT DECK (LEFT-CENTER PANEL) ================= -->
-    <section id="editorial-deck" aria-label="スポット検索と一覧" class="w-[340px] sm:w-[395px] xl:w-[430px] h-full bg-washi-100 border-r border-sumi-900/15 flex flex-col shrink-0 z-20 relative">
-
-      <!-- Masthead + KINETIC TYPOGRAPHY -->
-      <header class="px-4 pt-3.5 pb-3 bg-washi-50 border-b border-sumi-900/12 shrink-0">
-        <div class="flex items-center justify-between mb-1.5">
-          <div class="flex items-center gap-2">
-            <span class="font-serif italic font-bold text-lg tracking-tight text-sumi-900">NomaLoft</span>
-            <span class="text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded bg-washi-200 text-sumi-700">ISSUE 01 · KANSAI</span>
-          </div>
-          <button id="locate-me-btn" type="button" class="craft-btn px-2.5 py-1 rounded-lg bg-washi-100 border border-sumi-900 text-[11px] font-bold text-sumi-900 flex items-center gap-1.5 hover:bg-brass-300/60">
-            <svg viewBox="0 0 20 20" class="w-3.5 h-3.5 text-roast-500" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="10" cy="10" r="5.5"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18" stroke-linecap="round"/>
-            </svg>
-            <span>現在地測位</span>
-          </button>
+    <!-- Right Compact Telemetry & OSM Auto-Expand Capsule -->
+    <div class="pointer-events-auto hidden xl:flex items-center gap-2.5 glass-island rounded-full pl-3.5 pr-2 py-1.5">
+      <!-- Mini Animated Infographic Ring: Power Coverage -->
+      <div class="flex items-center gap-2" title="表示中スポットのコンセント設置率">
+        <div class="relative w-7 h-7">
+          <svg class="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="12" stroke="#E5D5BE" stroke-width="3.2" fill="none"/>
+            <circle id="hud-ring-power" cx="16" cy="16" r="12" stroke="#CA6B3E" stroke-width="3.2" stroke-linecap="round" fill="none" stroke-dasharray="75.4" stroke-dashoffset="75.4" class="ring-anim"/>
+          </svg>
         </div>
-
-        <!-- KINETIC TYPOGRAPHY STAGE (Editorial Split-Flap & Stagger Motion) -->
-        <h1 id="kinetic-headline" class="text-[17px] xl:text-[19px] font-bold leading-snug tracking-tight text-sumi-900 py-0.5">
-          <span class="text-sumi-600 text-xs font-medium block mb-0.5" id="current-area-caption">大阪・北浜 / 中之島 — 徒歩圏フィールドノート</span>
-          <span class="inline-flex flex-wrap items-baseline gap-x-1.5">
-            <span class="kinetic-slot inline-flex items-center px-2 py-0.5 rounded-md bg-brass-300/55 border border-sumi-900/35">
-              <span id="kinetic-rotating-word" class="font-round font-bold text-sumi-900">全席コンセントの</span>
-            </span>
-            <span class="kinetic-wave-text font-serif font-bold">喫茶と仕事場。</span>
-          </span>
-        </h1>
-
-        <!-- AUTO COMPLETE SEARCH BAR -->
-        <div class="relative mt-2.5" id="autocomplete-wrapper">
-          <div class="relative flex items-center">
-            <svg viewBox="0 0 20 20" class="w-4 h-4 text-sumi-600 absolute left-3 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="8.5" cy="8.5" r="5.5"/><path d="M13 13l4 4" stroke-linecap="round"/>
-            </svg>
-            <input
-              id="search-input"
-              type="text"
-              autocomplete="off"
-              placeholder="北浜・中崎町・烏丸・全席電源・防音ブース..."
-              aria-label="スポット検索"
-              aria-expanded="false"
-              aria-controls="autocomplete-dropdown"
-              class="w-full pl-9 pr-16 py-2 rounded-xl bg-white border border-sumi-900/35 focus:border-sumi-900 text-xs font-medium text-sumi-900 placeholder:text-sumi-600/60 focus:outline-none focus:ring-2 focus:ring-brass-300/60 transition-all"
-            />
-            <button id="clear-search-btn" type="button" class="hidden absolute right-9 w-5 h-5 rounded-full bg-washi-200 text-sumi-800 hover:bg-roast-500 hover:text-white flex items-center justify-center transition-colors" aria-label="検索語をクリア">
-              <svg viewBox="0 0 16 16" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg>
-            </button>
-            <kbd class="absolute right-2.5 px-1.5 py-0.5 text-[10px] font-mono bg-washi-100 border border-sumi-900/20 rounded text-sumi-600">/</kbd>
-          </div>
-
-          <!-- AUTO COMPLETE DROPDOWN -->
-          <div id="autocomplete-dropdown" role="listbox" class="hidden absolute left-0 right-0 mt-1.5 bg-washi-50 border border-sumi-900 rounded-xl shadow-[0_12px_28px_rgba(34,27,23,0.16)] overflow-hidden z-50">
-            <div class="px-3 py-1.5 bg-washi-200/70 border-b border-sumi-900/10 flex items-center justify-between text-[10px] font-mono text-sumi-700">
-              <span>SUGGESTIONS (↑↓ / ENTER)</span>
-              <span id="ac-count">8</span>
-            </div>
-            <ul id="autocomplete-list" class="max-h-64 overflow-y-auto divide-y divide-sumi-900/10"></ul>
-          </div>
-        </div>
-
-        <!-- Horizontal Filter Strip -->
-        <div class="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="filter-bar">
-          <button type="button" data-cat="all" class="cat-pill active shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-sumi-900 bg-sumi-900 text-washi-50 transition-all">すべて</button>
-          <button type="button" data-cat="cafe" class="cat-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-sumi-900/25 bg-washi-50 text-sumi-800 hover:border-sumi-900 transition-all">喫茶・焙煎所</button>
-          <button type="button" data-cat="coworking" class="cat-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-sumi-900/25 bg-washi-50 text-sumi-800 hover:border-sumi-900 transition-all">コワーキング</button>
-          <span class="h-3.5 w-[1px] bg-sumi-900/15 shrink-0 mx-0.5"></span>
-          <button type="button" data-filter="power90" class="cond-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-sumi-900/20 bg-washi-100 text-sumi-800 hover:border-sumi-900 transition-all">電源90%+</button>
-          <button type="button" data-filter="wifi300" class="cond-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-sumi-900/20 bg-washi-100 text-sumi-800 hover:border-sumi-900 transition-all">300Mbps+</button>
-          <button type="button" data-filter="call_ok" class="cond-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-sumi-900/20 bg-washi-100 text-sumi-800 hover:border-sumi-900 transition-all">会議・ブース可</button>
-          <button type="button" data-filter="quiet" class="cond-pill shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-sumi-900/20 bg-washi-100 text-sumi-800 hover:border-sumi-900 transition-all">静寂読書</button>
-        </div>
-      </header>
-
-      <!-- Sub-toolbar: Count + Sort + Swipe Guide + Refresh -->
-      <div class="px-4 py-2 bg-washi-200/55 border-b border-sumi-900/10 flex items-center justify-between text-[11px] shrink-0">
-        <div class="flex items-center gap-2">
-          <span class="font-mono font-bold text-sumi-900"><span id="spot-count-num">8</span> SPOTS</span>
-          <span class="text-sumi-600 text-[10px]">左右スワイプで保存/記録</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <select id="sort-select" aria-label="並び替え" class="bg-washi-50 border border-sumi-900/25 rounded-md px-2 py-0.5 text-[11px] font-bold text-sumi-900 focus:outline-none cursor-pointer">
-            <option value="distance">現在地から近い順</option>
-            <option value="score">快適指数順</option>
-            <option value="wifi">回線速度順</option>
-            <option value="empty">空席ゆとり順</option>
-          </select>
-          <button id="deck-refresh-btn" type="button" class="p-1 rounded-md bg-washi-50 border border-sumi-900/25 hover:bg-brass-300/50 text-sumi-800" title="空席・回線状況を再取得">
-            <svg id="deck-refresh-svg" viewBox="0 0 20 20" class="w-3.5 h-3.5 transition-transform duration-500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16.5 10a6.5 6.5 0 1 1-1.9-4.6"/><path d="M16.5 3.5v3.5H13"/>
-            </svg>
-          </button>
+        <div class="leading-tight">
+          <div class="text-[9px] font-mono text-moka-500">POWER</div>
+          <div class="text-xs font-mono font-bold text-moka-900"><span id="hud-power-pct">0</span>%</div>
         </div>
       </div>
 
-      <!-- PULL TO REFRESH (V60 Hand-Drip Line-Art Indicator) -->
-      <div id="ptr-indicator" class="ptr-box overflow-hidden bg-washi-200/70 border-b border-sumi-900/10 flex items-center justify-center gap-2.5 text-[11px] font-bold text-sumi-800 shrink-0" style="height: 0px;">
-        <svg id="ptr-dripper-svg" viewBox="0 0 32 32" class="w-6 h-6" fill="none" stroke="#221B17" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="6,7 26,7 20,17 12,17" fill="#FCF9F4"/>
-          <line x1="4" y1="17" x2="28" y2="17"/>
-          <path d="M10 17 V25 C10 27.2 12.7 29 16 29 C19.3 29 22 27.2 22 25 V17"/>
-          <circle id="ptr-drop" cx="16" cy="22" r="1.5" fill="#C06044" stroke="none"/>
+      <!-- Mini Animated Infographic Ring: Wi-Fi Coverage -->
+      <div class="flex items-center gap-2" title="表示中スポットの無料Wi-Fi設置率">
+        <div class="relative w-7 h-7">
+          <svg class="w-7 h-7 -rotate-90" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="12" stroke="#E5D5BE" stroke-width="3.2" fill="none"/>
+            <circle id="hud-ring-wifi" cx="16" cy="16" r="12" stroke="#497E56" stroke-width="3.2" stroke-linecap="round" fill="none" stroke-dasharray="75.4" stroke-dashoffset="75.4" class="ring-anim"/>
+          </svg>
+        </div>
+        <div class="leading-tight">
+          <div class="text-[9px] font-mono text-moka-500">WI-FI</div>
+          <div class="text-xs font-mono font-bold text-moka-900"><span id="hud-wifi-pct">0</span>%</div>
+        </div>
+      </div>
+
+      <!-- Live OSM Street-Cafe Expansion Switch -->
+      <button id="osm-expand-btn" type="button" class="pill-action-btn px-3 py-1.5 rounded-full bg-moka-900 text-cream-50 text-[11px] font-bold flex items-center gap-1.5 hover:bg-caramel-500 transition-colors" title="OpenStreetMapから表示範囲周辺の一般カフェも一括追加取得します">
+        <span class="w-2 h-2 rounded-full bg-sage-400 animate-pulse" id="osm-pulse-dot"></span>
+        <span id="osm-btn-label">+ 周辺の街カフェも読込</span>
+      </button>
+
+      <!-- Map Style Switch -->
+      <button id="map-style-btn" type="button" class="w-8 h-8 rounded-full bg-cream-100 hover:bg-honey-200 border border-moka-900/15 flex items-center justify-center text-moka-800 transition-colors" title="地図トーン切替（ラテ和紙 / 標準OSM）">
+        <svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="2,6 7,3 13,6 18,3 18,14 13,17 7,14 2,17"/><line x1="7" y1="3" x2="7" y2="14"/><line x1="13" y1="6" x2="13" y2="17"/>
         </svg>
-        <span id="ptr-text">下に引いて最新ステータスをハンドドリップ...</span>
-      </div>
+      </button>
+    </div>
+  </header>
 
-      <!-- SCROLLABLE SPOT STREAM (Skeleton Screen + Swipe Action Cards) -->
-      <div id="spot-scroll-container" class="flex-1 overflow-y-auto px-3.5 py-3 space-y-2.5">
-
-        <!-- SKELETON SCREEN -->
-        <div id="skeleton-list" class="space-y-2.5">
-          <div class="rounded-2xl border border-sumi-900/12 bg-washi-50 p-3.5 space-y-2.5">
-            <div class="flex gap-3">
-              <div class="w-24 h-20 rounded-xl washi-shimmer shrink-0"></div>
-              <div class="flex-1 space-y-2 py-0.5">
-                <div class="h-3 w-1/3 rounded washi-shimmer"></div>
-                <div class="h-4 w-4/5 rounded washi-shimmer"></div>
-                <div class="h-3 w-2/3 rounded washi-shimmer"></div>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-1.5 pt-1">
-              <div class="h-6 rounded-lg washi-shimmer"></div>
-              <div class="h-6 rounded-lg washi-shimmer"></div>
-              <div class="h-6 rounded-lg washi-shimmer"></div>
-            </div>
-          </div>
-          <div class="rounded-2xl border border-sumi-900/12 bg-washi-50 p-3.5 space-y-2.5">
-            <div class="flex gap-3">
-              <div class="w-24 h-20 rounded-xl washi-shimmer shrink-0"></div>
-              <div class="flex-1 space-y-2 py-0.5">
-                <div class="h-3 w-2/5 rounded washi-shimmer"></div>
-                <div class="h-4 w-3/4 rounded washi-shimmer"></div>
-                <div class="h-3 w-1/2 rounded washi-shimmer"></div>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-1.5 pt-1">
-              <div class="h-6 rounded-lg washi-shimmer"></div>
-              <div class="h-6 rounded-lg washi-shimmer"></div>
-              <div class="h-6 rounded-lg washi-shimmer"></div>
-            </div>
-          </div>
-          <div class="rounded-2xl border border-sumi-900/12 bg-washi-50 p-3.5 space-y-2.5">
-            <div class="flex gap-3">
-              <div class="w-24 h-20 rounded-xl washi-shimmer shrink-0"></div>
-              <div class="flex-1 space-y-2 py-0.5">
-                <div class="h-3 w-1/4 rounded washi-shimmer"></div>
-                <div class="h-4 w-5/6 rounded washi-shimmer"></div>
-                <div class="h-3 w-3/5 rounded washi-shimmer"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ACTUAL SWIPEABLE SPOT CARDS -->
-        <div id="spots-cards-list" class="space-y-2.5 hidden"></div>
-      </div>
-
-      <!-- Focus Timer Floating Mini-Drawer (Inside Deck Bottom when toggled) -->
-      <div id="pomo-drawer" class="hidden border-t border-sumi-900 bg-washi-50 px-4 py-3 shrink-0">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <svg viewBox="0 0 24 24" class="w-5 h-5 text-roast-500" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6" stroke-linecap="round"/>
+  <!-- =========================================================================
+       [LAYER 2] FLOATING SCULPTED CREAM-GLASS EXPLORER ISLAND (LEFT)
+       ========================================================================= -->
+  <section
+    id="explorer-island"
+    aria-label="カフェ・コワーキング検索パネル"
+    class="fixed top-3.5 bottom-3.5 left-3.5 w-[calc(100vw-28px)] sm:w-[400px] z-30 glass-island rounded-[28px] flex flex-col overflow-hidden transition-transform duration-300"
+  >
+    <!-- Top Brand + Eye-Tracking Mascot Cup + Kinetic Typography Counter -->
+    <div class="px-4 pt-4 pb-3 border-b border-moka-900/8 shrink-0">
+      <div class="flex items-center justify-between gap-2">
+        <!-- Brand + Playful Eye-Tracking Cup SVG -->
+        <div class="flex items-center gap-2.5">
+          <button id="mascot-cup-btn" type="button" class="relative w-11 h-11 rounded-2xl bg-gradient-to-b from-cream-50 to-cream-200 border border-moka-900/15 shadow-sm flex items-center justify-center group hover:scale-105 active:scale-95 transition-transform" title="NomaLoft — クリックで湯気アニメーション">
+            <svg viewBox="0 0 44 44" class="w-9 h-9">
+              <path class="cup-steam cs-1" d="M16 9 C15 6 18 5 17 2.5" stroke="#CA6B3E" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+              <path class="cup-steam cs-2" d="M23 10 C22 7 25 6 24 3.5" stroke="#CFB899" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+              <path d="M9 16 H30 V25.5 C30 31.5 25.2 35.5 19.5 35.5 C13.8 35.5 9 31.5 9 25.5 Z" fill="#FFFDFA" stroke="#211813" stroke-width="2"/>
+              <path d="M30 18.5 H33.2 C35.6 18.5 37 20.2 37 22.3 C37 24.4 35.6 26 33.2 26 H30" fill="none" stroke="#211813" stroke-width="2" stroke-linecap="round"/>
+              <ellipse cx="19.5" cy="16" rx="10.2" ry="2.7" fill="#D5B084" stroke="#211813" stroke-width="1.6"/>
+              <!-- Eye-tracking pupils -->
+              <g id="mascot-eyes">
+                <circle cx="15.8" cy="24.5" r="1.6" fill="#211813"/>
+                <circle cx="23.2" cy="24.5" r="1.6" fill="#211813"/>
+              </g>
+              <ellipse cx="13.2" cy="26.3" rx="1.8" ry="1.1" fill="#E89980" opacity="0.6"/>
+              <ellipse cx="25.8" cy="26.3" rx="1.8" ry="1.1" fill="#E89980" opacity="0.6"/>
+              <path d="M17.8 26.5 Q19.5 28.2 21.2 26.5" stroke="#211813" stroke-width="1.6" stroke-linecap="round" fill="none"/>
             </svg>
-            <div>
-              <div class="text-[10px] font-mono uppercase tracking-wider text-sumi-600" id="pomo-status-text">ROAST FOCUS TIMER</div>
-              <div id="pomo-timer-display" class="font-mono font-bold text-lg text-sumi-900 leading-none mt-0.5">25:00</div>
+          </button>
+
+          <div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-display font-bold text-xl tracking-tight text-moka-900">NomaLoft</span>
+              <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-honey-200 text-moka-800" id="total-spots-pill">89軒</span>
             </div>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button id="pomo-toggle-btn" type="button" class="craft-btn px-3 py-1.5 rounded-lg bg-sumi-900 text-washi-50 text-xs font-bold">START</button>
-            <button id="pomo-reset-btn" type="button" class="px-2 py-1.5 rounded-lg border border-sumi-900/30 text-xs font-mono text-sumi-700 hover:bg-washi-200">RESET</button>
-            <button id="pomo-close-btn" type="button" class="p-1 text-sumi-600 hover:text-sumi-900" aria-label="タイマーを閉じる">
-              <svg viewBox="0 0 16 16" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================= [3] WIDE FREE OPENSTREETMAP STAGE + INFOGRAPHIC HUD + BOTTOM SHEET ================= -->
-    <main id="map-stage" class="flex-1 h-full relative overflow-hidden bg-washi-200">
-
-      <!-- TOP FLOATING TELEMETRY RIBBON (INFOGRAPHIC ANIMATION DOCK) -->
-      <header id="map-infographic-hud" class="absolute top-3.5 left-3.5 right-3.5 z-[600] pointer-events-none flex flex-wrap items-stretch justify-between gap-2.5">
-
-        <!-- Left Instrument: Animated Radial Gauges + Hourly Sparkbars -->
-        <div class="pointer-events-auto bg-washi-50/95 backdrop-blur-md border border-sumi-900/25 rounded-2xl px-4 py-2.5 shadow-[0_6px_24px_rgba(34,27,23,0.09)] flex items-center gap-4 sm:gap-5">
-          <!-- Gauge 1: Avg Wi-Fi -->
-          <div class="flex items-center gap-2.5">
-            <div class="relative w-11 h-11 shrink-0">
-              <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="17.5" stroke="#EAE0D0" stroke-width="3.8" fill="none"/>
-                <circle id="ring-wifi" cx="22" cy="22" r="17.5" stroke="#4E7255" stroke-width="3.8" stroke-linecap="round" fill="none" stroke-dasharray="109.95" stroke-dashoffset="109.95" class="infographic-arc"/>
-              </svg>
-              <span class="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold text-sumi-900" id="stat-avg-wifi">0</span>
-            </div>
-            <div>
-              <div class="font-mono text-[9px] uppercase tracking-wider text-sumi-600">AVG WI-FI</div>
-              <div class="text-xs font-bold text-sumi-900">平均 <span id="stat-avg-wifi-label" class="font-mono">0</span> Mbps</div>
-            </div>
-          </div>
-
-          <div class="h-7 w-[1px] bg-sumi-900/12 hidden sm:block"></div>
-
-          <!-- Gauge 2: AC Power -->
-          <div class="hidden sm:flex items-center gap-2.5">
-            <div class="relative w-11 h-11 shrink-0">
-              <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="17.5" stroke="#EAE0D0" stroke-width="3.8" fill="none"/>
-                <circle id="ring-power" cx="22" cy="22" r="17.5" stroke="#C06044" stroke-width="3.8" stroke-linecap="round" fill="none" stroke-dasharray="109.95" stroke-dashoffset="109.95" class="infographic-arc"/>
-              </svg>
-              <span class="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold text-sumi-900"><span id="stat-avg-power">0</span>%</span>
-            </div>
-            <div>
-              <div class="font-mono text-[9px] uppercase tracking-wider text-sumi-600">POWER SEATS</div>
-              <div class="text-xs font-bold text-sumi-900">電源席カバー率</div>
-            </div>
-          </div>
-
-          <div class="h-7 w-[1px] bg-sumi-900/12 hidden md:block"></div>
-
-          <!-- Gauge 3: Open Seats -->
-          <div class="hidden md:flex items-center gap-2.5">
-            <div class="relative w-11 h-11 shrink-0">
-              <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="17.5" stroke="#EAE0D0" stroke-width="3.8" fill="none"/>
-                <circle id="ring-seats" cx="22" cy="22" r="17.5" stroke="#B58F44" stroke-width="3.8" stroke-linecap="round" fill="none" stroke-dasharray="109.95" stroke-dashoffset="109.95" class="infographic-arc"/>
-              </svg>
-              <span class="absolute inset-0 flex items-center justify-center font-mono text-[10px] font-bold text-sumi-900" id="stat-open-seats">0</span>
-            </div>
-            <div>
-              <div class="font-mono text-[9px] uppercase tracking-wider text-sumi-600">OPEN SEATS</div>
-              <div class="text-xs font-bold text-sumi-900">周辺空席数</div>
-            </div>
-          </div>
-
-          <div class="h-7 w-[1px] bg-sumi-900/12 hidden xl:block"></div>
-
-          <!-- Mini Hourly Comfort Infographic Spark-Bars -->
-          <div class="hidden xl:flex items-center gap-2.5">
-            <div>
-              <div class="font-mono text-[9px] uppercase tracking-wider text-sumi-600">COMFORT CURVE</div>
-              <div class="text-[11px] font-bold text-moss-500">14:00台 空席ピーク</div>
-            </div>
-            <div id="hud-spark-bars" class="h-9 flex items-end gap-1 pt-1"></div>
+            <!-- KINETIC TYPOGRAPHY LINE -->
+            <p class="text-xs font-bold text-moka-700 flex items-center gap-1 mt-0.5">
+              <span id="kinetic-word" class="inline-block text-caramel-500 font-black">コンセント有無</span>
+              <span>が即わかる関西カフェ地図</span>
+            </p>
           </div>
         </div>
 
-        <!-- Right Map Layer & Live OSM Controls -->
-        <div class="pointer-events-auto flex items-center gap-2">
-          <!-- Fetch Real Free OpenStreetMap Cafes via Overpass API -->
-          <button id="osm-live-btn" type="button" class="craft-btn px-3 py-2 rounded-xl bg-washi-50/95 backdrop-blur-md border border-sumi-900/35 hover:border-sumi-900 text-xs font-bold text-sumi-900 flex items-center gap-1.5 shadow-sm" title="OpenStreetMapの無料Overpass APIから周辺のリアル店舗データを追加取得">
-            <svg viewBox="0 0 20 20" class="w-3.5 h-3.5 text-moss-500" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="10" cy="10" r="7.5"/><path d="M2.5 10h15M10 2.5c2.2 2.2 2.2 12.8 0 15M10 2.5c-2.2 2.2-2.2 12.8 0 15"/>
+        <!-- GPS & Saved Bookmarks Quick Buttons -->
+        <div class="flex items-center gap-1.5">
+          <button id="saved-only-btn" type="button" class="relative h-9 px-2.5 rounded-xl bg-cream-50/90 hover:bg-honey-200/70 border border-moka-900/12 flex items-center gap-1 text-xs font-bold text-moka-800 transition-all" title="保存したカフェのみ表示">
+            <svg viewBox="0 0 20 20" class="w-3.5 h-3.5 text-caramel-500" fill="currentColor"><path d="M5 3.5h10a1 1 0 0 1 1 1v12.5L10 13.6l-6 3.4V4.5a1 1 0 0 1 1-1z"/></svg>
+            <span id="saved-count" class="font-mono text-[11px]">2</span>
+          </button>
+          <button id="gps-btn" type="button" class="h-9 px-3 rounded-xl bg-moka-900 hover:bg-caramel-500 text-cream-50 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors" title="現在地から近い順に並べる">
+            <svg viewBox="0 0 20 20" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="10" cy="10" r="5"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><path d="M10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18" stroke-linecap="round"/>
             </svg>
-            <span id="osm-live-label">OSM周辺カフェ重畳</span>
-          </button>
-
-          <!-- Map Paper Tone Toggle -->
-          <button id="map-tone-btn" type="button" class="craft-btn px-3 py-2 rounded-xl bg-washi-50/95 backdrop-blur-md border border-sumi-900/35 hover:border-sumi-900 text-xs font-bold text-sumi-900 flex items-center gap-1.5 shadow-sm" title="和紙トーン / 標準OpenStreetMap表示切替">
-            <span class="w-2.5 h-2.5 rounded-full bg-brass-400 border border-sumi-900 inline-block"></span>
-            <span id="map-tone-label">和紙マップ</span>
-          </button>
-
-          <!-- 8-min Walk Ring Toggle -->
-          <button id="walk-ring-btn" type="button" class="craft-btn px-2.5 py-2 rounded-xl bg-washi-50/95 backdrop-blur-md border border-sumi-900/35 hover:border-sumi-900 text-xs font-mono font-bold text-sumi-900 shadow-sm" title="徒歩8分圏（650m）サークル表示">
-            650m圏
+            <span>現在地</span>
           </button>
         </div>
-      </header>
-
-      <!-- FREE OPENSTREETMAP CANVAS -->
-      <div id="nomaloft-map" class="w-full h-full z-10 washi-map-filter"></div>
-
-      <!-- Bottom-Left Subtle Map Legend & Free OSM Attribution -->
-      <div class="absolute bottom-3 left-3.5 z-[500] pointer-events-auto bg-washi-50/90 backdrop-blur-sm border border-sumi-900/20 rounded-xl px-3 py-1.5 flex items-center gap-3 text-[11px] text-sumi-800 shadow-sm">
-        <span class="inline-flex items-center gap-1.5 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-washi-50 border-2 border-roast-500 inline-block"></span> 喫茶・焙煎所</span>
-        <span class="inline-flex items-center gap-1.5 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-washi-50 border-2 border-moss-500 inline-block"></span> コワーキング</span>
-        <span class="text-sumi-600 font-mono text-[10px]" id="coords-readout">34.6918N, 135.5064E</span>
-        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" class="text-[10px] font-mono text-sumi-600 underline hover:text-sumi-900">OSM Free Map</a>
       </div>
 
-      <!-- ================= DRAGGABLE BOTTOM SHEET (Anchored over Map Stage) ================= -->
-      <div id="bottom-sheet-backdrop" class="absolute inset-0 bg-sumi-900/20 backdrop-blur-[1px] z-[800] opacity-0 pointer-events-none transition-opacity duration-300"></div>
-
-      <aside
-        id="spot-bottom-sheet"
-        role="dialog"
-        aria-modal="false"
-        aria-labelledby="bs-spot-title"
-        class="absolute left-3 right-3 bottom-0 z-[900] max-w-4xl mx-auto bg-washi-50 border-t-2 border-x border-sumi-900 rounded-t-[24px] shadow-[0_-16px_48px_rgba(34,27,23,0.22)] translate-y-full transition-transform duration-300 ease-out max-h-[84%] flex flex-col"
-      >
-        <!-- Drag Handle Bar -->
-        <div id="bs-drag-handle" class="pt-2.5 pb-2 px-5 cursor-grab active:cursor-grabbing flex items-center justify-between border-b border-sumi-900/10 shrink-0 touch-none">
-          <span class="font-mono text-[10px] tracking-widest uppercase text-sumi-600" id="bs-code-label">DOSSIER · NL-01</span>
-          <div class="w-12 h-1 rounded-full bg-sumi-900/25"></div>
-          <div class="flex items-center gap-2">
-            <button id="bs-expand-btn" type="button" class="px-2.5 py-1 rounded-md bg-washi-200/80 hover:bg-brass-300/60 text-[11px] font-bold text-sumi-800 transition-colors">拡大表示</button>
-            <button id="bs-close-btn" type="button" class="w-7 h-7 rounded-full bg-washi-200/80 hover:bg-roast-500 hover:text-white flex items-center justify-center text-sumi-900 transition-colors" aria-label="詳細シートを閉じる">
-              <svg viewBox="0 0 16 16" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round"/></svg>
-            </button>
-          </div>
+      <!-- AUTO COMPLETE SEARCH BOX -->
+      <div class="relative mt-3" id="ac-container">
+        <div class="relative flex items-center">
+          <svg viewBox="0 0 20 20" class="w-4 h-4 text-moka-500 absolute left-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="8.5" cy="8.5" r="5.3"/><path d="M12.8 12.8L16.8 16.8" stroke-linecap="round"/>
+          </svg>
+          <input
+            id="search-input"
+            type="text"
+            autocomplete="off"
+            placeholder="駅名・店名（北浜、烏丸、三宮、スタバ、FabCafe...）"
+            aria-label="カフェ・駅名検索"
+            class="w-full pl-10 pr-14 py-2.5 rounded-2xl bg-cream-50 border border-moka-900/15 focus:border-caramel-500 text-xs font-bold text-moka-900 placeholder:text-moka-500/70 placeholder:font-medium shadow-[inset_0_1px_2px_rgba(33,24,19,0.04)] focus:outline-none focus:ring-2 focus:ring-honey-300/70 transition-all"
+          />
+          <button id="clear-q-btn" type="button" class="hidden absolute right-9 w-5 h-5 rounded-full bg-cream-200 hover:bg-caramel-500 hover:text-white text-moka-700 flex items-center justify-center transition-colors" aria-label="クリア">
+            <svg viewBox="0 0 14 14" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke-linecap="round"/></svg>
+          </button>
+          <kbd class="absolute right-3 px-1.5 py-0.5 rounded-md bg-cream-200/80 text-[10px] font-mono text-moka-500">/</kbd>
         </div>
 
-        <!-- Bottom Sheet Content Body -->
-        <div id="bs-content" class="px-5 sm:px-6 py-4 overflow-y-auto flex-1 space-y-4 select-text"></div>
-      </aside>
+        <!-- AUTO COMPLETE SUGGESTIONS PANEL -->
+        <div id="ac-panel" role="listbox" class="hidden absolute left-0 right-0 mt-1.5 bg-cream-50/98 backdrop-blur-xl border border-moka-900/15 rounded-2xl shadow-[0_18px_40px_rgba(33,24,19,0.16)] overflow-hidden z-50">
+          <ul id="ac-list" class="max-h-64 overflow-y-auto divide-y divide-moka-900/6"></ul>
+        </div>
+      </div>
 
-    </main>
+      <!-- PHYSICAL TACTILE FILTER SWITCHES (Power / Wi-Fi / Category) -->
+      <div class="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        <!-- Tactile Switch: Power Available -->
+        <button id="toggle-power-btn" type="button" aria-pressed="false" class="tactile-switch shrink-0 px-3 py-1.5 rounded-xl border border-moka-900/14 bg-cream-50 text-xs font-bold text-moka-800 flex items-center gap-1.5 transition-all">
+          <span class="switch-dot w-2 h-2 rounded-full bg-moka-500/35 transition-colors"></span>
+          <svg viewBox="0 0 18 18" class="w-3.5 h-3.5 text-caramel-500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6.5 2.5v3.5M11.5 2.5v3.5M4.5 6h9v2.8a4.5 4.5 0 0 1-9 0V6zM9 13.3v2.5"/></svg>
+          <span>コンセントあり</span>
+        </button>
+
+        <!-- Tactile Switch: Free Wi-Fi -->
+        <button id="toggle-wifi-btn" type="button" aria-pressed="false" class="tactile-switch shrink-0 px-3 py-1.5 rounded-xl border border-moka-900/14 bg-cream-50 text-xs font-bold text-moka-800 flex items-center gap-1.5 transition-all">
+          <span class="switch-dot w-2 h-2 rounded-full bg-moka-500/35 transition-colors"></span>
+          <svg viewBox="0 0 18 18" class="w-3.5 h-3.5 text-sage-500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2.5 7a10.5 10.5 0 0 1 13 0M5.2 10a6.5 6.5 0 0 1 7.6 0M8.8 13.2h.4"/></svg>
+          <span>Wi-Fiあり</span>
+        </button>
+
+        <!-- Category Segmented Mini-Pills -->
+        <button type="button" data-cat="coworking" class="cat-chip shrink-0 px-2.5 py-1.5 rounded-xl border border-moka-900/12 bg-cream-50/70 text-xs font-bold text-moka-700 hover:bg-cream-50 transition-all">コワーキング</button>
+        <button type="button" data-cat="cafe" class="cat-chip shrink-0 px-2.5 py-1.5 rounded-xl border border-moka-900/12 bg-cream-50/70 text-xs font-bold text-moka-700 hover:bg-cream-50 transition-all">カフェのみ</button>
+      </div>
+    </div>
+
+    <!-- Compact Sort & Count Strip -->
+    <div class="px-4 py-2 bg-cream-200/45 border-b border-moka-900/6 flex items-center justify-between text-[11px] shrink-0">
+      <div class="flex items-center gap-1.5 text-moka-700 font-bold">
+        <span id="list-result-count" class="font-mono text-moka-900">89</span>
+        <span>スポット表示中</span>
+        <span class="text-moka-500 font-normal hidden sm:inline">· 右スワイプ保存</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <select id="sort-select" aria-label="並び順" class="bg-transparent text-[11px] font-bold text-moka-800 focus:outline-none cursor-pointer">
+          <option value="distance">近い順</option>
+          <option value="score">作業快適順</option>
+          <option value="speed">回線目安順</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- PULL TO REFRESH (Minimal Pour-Over Dripper) -->
+    <div id="ptr-bar" class="ptr-bar overflow-hidden bg-cream-100/80 flex items-center justify-center gap-2 text-[11px] font-bold text-moka-700 shrink-0" style="height:0px">
+      <svg id="ptr-icon" viewBox="0 0 24 24" class="w-4 h-4 text-caramel-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 5h16l-4.5 8h-7L4 5z"/><path d="M8 13v5a4 4 0 0 0 8 0v-5"/><line x1="3" y1="13" x2="21" y2="13"/>
+      </svg>
+      <span id="ptr-label">引っ張って現在マップ周辺のカフェを再スキャン</span>
+    </div>
+
+    <!-- SCROLLABLE SPOT CARDS (Skeleton Screen + Swipe Action Cards) -->
+    <div id="cards-scroller" class="flex-1 overflow-y-auto px-3 py-2.5 space-y-2">
+
+      <!-- SKELETON SCREEN -->
+      <div id="skeleton-wrap" class="space-y-2">
+        <div class="rounded-2xl bg-cream-50/85 p-3.5 space-y-2.5 border border-white/60">
+          <div class="flex justify-between">
+            <div class="h-4 w-3/5 rounded-lg latte-shimmer"></div>
+            <div class="h-4 w-12 rounded-lg latte-shimmer"></div>
+          </div>
+          <div class="h-3 w-2/5 rounded-lg latte-shimmer"></div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="h-7 rounded-xl latte-shimmer"></div>
+            <div class="h-7 rounded-xl latte-shimmer"></div>
+          </div>
+        </div>
+        <div class="rounded-2xl bg-cream-50/85 p-3.5 space-y-2.5 border border-white/60">
+          <div class="flex justify-between">
+            <div class="h-4 w-2/3 rounded-lg latte-shimmer"></div>
+            <div class="h-4 w-12 rounded-lg latte-shimmer"></div>
+          </div>
+          <div class="h-3 w-1/2 rounded-lg latte-shimmer"></div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="h-7 rounded-xl latte-shimmer"></div>
+            <div class="h-7 rounded-xl latte-shimmer"></div>
+          </div>
+        </div>
+        <div class="rounded-2xl bg-cream-50/85 p-3.5 space-y-2.5 border border-white/60">
+          <div class="flex justify-between">
+            <div class="h-4 w-1/2 rounded-lg latte-shimmer"></div>
+            <div class="h-4 w-12 rounded-lg latte-shimmer"></div>
+          </div>
+          <div class="h-3 w-2/5 rounded-lg latte-shimmer"></div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="h-7 rounded-xl latte-shimmer"></div>
+            <div class="h-7 rounded-xl latte-shimmer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTUAL CARDS STREAM -->
+      <div id="cards-list" class="space-y-2 hidden"></div>
+    </div>
+  </section>
+
+  <!-- Mobile Toggle Button to Collapse/Show List on Small Screens -->
+  <button id="mobile-sheet-toggle" type="button" class="sm:hidden fixed bottom-4 right-4 z-40 px-4 py-2.5 rounded-full bg-moka-900 text-cream-50 text-xs font-bold shadow-xl flex items-center gap-2">
+    <span id="mobile-toggle-label">地図を広く見る</span>
+  </button>
+
+  <!-- =========================================================================
+       [LAYER 3] SCULPTED BOTTOM SHEET (Spot Official Info, SNS, Power/Wi-Fi & Infographic)
+       ========================================================================= -->
+  <aside
+    id="spot-bottom-sheet"
+    role="dialog"
+    aria-labelledby="bs-title"
+    class="fixed left-3.5 sm:left-[428px] right-3.5 bottom-3.5 z-40 max-w-4xl mx-auto glass-island-solid rounded-[28px] translate-y-[120%] transition-transform duration-300 ease-out max-h-[82vh] flex flex-col overflow-hidden"
+  >
+    <!-- Drag Handle -->
+    <div id="bs-handle" class="pt-2.5 pb-1.5 px-5 cursor-grab active:cursor-grabbing flex items-center justify-between border-b border-moka-900/8 shrink-0 touch-none">
+      <span id="bs-area-tag" class="text-[11px] font-bold text-moka-500">大阪・北浜</span>
+      <div class="w-10 h-1 rounded-full bg-moka-900/20"></div>
+      <div class="flex items-center gap-1.5">
+        <button id="bs-size-btn" type="button" class="px-2.5 py-1 rounded-lg bg-cream-200/70 hover:bg-honey-200 text-[11px] font-bold text-moka-800 transition-colors">拡大</button>
+        <button id="bs-close-btn" type="button" class="w-7 h-7 rounded-full bg-cream-200/70 hover:bg-caramel-500 hover:text-white flex items-center justify-center text-moka-800 transition-colors" aria-label="閉じる">
+          <svg viewBox="0 0 14 14" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Sheet Dynamic Content -->
+    <div id="bs-body" class="px-5 py-4 overflow-y-auto flex-1 space-y-4 select-text"></div>
+  </aside>
+
+  <!-- =========================================================================
+       [LAYER 4] FLOATING TOAST STACK (Top-Center)
+       ========================================================================= -->
+  <aside id="toast-stack" aria-live="polite" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-[90vw] max-w-sm"></aside>
+
+  <!-- Subtle OSM Attribution Pill (Bottom-Right) -->
+  <div class="fixed bottom-2 right-3 z-10 px-2 py-0.5 rounded-md bg-cream-50/75 backdrop-blur-sm text-[10px] font-mono text-moka-500 pointer-events-auto">
+    <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" class="hover:underline">OpenStreetMap</a>
   </div>
 
-  <!-- Application Script -->
+  <!-- Main Client Script -->
   <script src="/static/app.js"></script>
 </body>
 </html>`)
