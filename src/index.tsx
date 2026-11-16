@@ -259,10 +259,11 @@ app.get('/', (c) => {
       </div>
     </header>
 
-    <!-- 4. Friendly Count + Map Bounds Sync Pill + Sort -->
+    <!-- 4. Friendly Count + Subtle Walking Paw Trail + Sort -->
     <div class="px-4 py-2.5 bg-[#F7EFE4]/70 border-b border-[#ECE0D1] flex items-center justify-between gap-2 text-xs shrink-0">
-      <div class="flex items-center gap-1.5 min-w-0">
-        <span class="font-bold text-espresso truncate" id="friendly-count-text">99軒のカフェが見つかったよ</span>
+      <div class="flex items-center gap-1 min-w-0">
+        <span class="font-bold text-espresso truncate" id="friendly-count-text">200軒のカフェが見つかったよ</span>
+        <span id="paw-trail-slot" class="shrink-0"></span>
       </div>
       <div class="flex items-center gap-2 shrink-0">
         <label for="sort-select" class="sr-only">並び替え</label>
@@ -355,31 +356,18 @@ app.get('/', (c) => {
     <!-- Leaflet Map Canvas -->
     <div id="nomaloft-map" class="w-full h-full calm-cafe-tiles z-10"></div>
 
-    <!-- Map Bottom-Left Compact Legend + Perched Loaf-Cat ("看板ねこ") -->
-    <div class="hidden md:flex absolute bottom-4 left-4 z-[500] bg-white/94 backdrop-blur-sm border border-[#E8DDD0] rounded-full pl-2.5 pr-4 py-1.5 shadow-sm items-center gap-3 text-[11px] font-bold text-espresso">
-      <button
-        id="legend-cat-btn"
-        type="button"
-        class="soft-press inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFF5EC] border border-[#F0D5C2] text-cafeorange hover:bg-cafeorange hover:text-white transition-colors"
-        title="看板ねこをなでる"
-      >
-        <svg viewBox="0 0 28 20" class="w-6 h-4" fill="none">
-          <path d="M5 15 C5 10.5 8.5 8 13 8 C17.5 8 20.5 10.5 20.5 15 Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-          <polygon points="7,9.5 8,4.5 11.5,8" fill="currentColor" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-          <polygon points="18,9.5 17,4.5 13.5,8" fill="currentColor" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-          <path d="M20.5 14.5 C23.5 14.5 25.5 12 24.5 9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          <circle cx="11" cy="11.8" r="0.9" fill="currentColor"/>
-          <circle cx="14.5" cy="11.8" r="0.9" fill="currentColor"/>
-        </svg>
-        <span>看板ねこ</span>
-      </button>
+    <!-- Fleeting Serendipitous Cat Paw-Walk Container -->
+    <div id="map-paw-whisper" class="map-paw-whisper" aria-hidden="true"></div>
+
+    <!-- Map Bottom-Left Compact Legend (Clean Previous Style) -->
+    <div class="hidden md:flex absolute bottom-4 left-4 z-[500] bg-white/92 backdrop-blur-sm border border-[#E8DDD0] rounded-full px-3.5 py-1.5 shadow-sm items-center gap-3 text-[11px] font-bold text-espresso">
       <span class="inline-flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-full bg-cafeorange inline-block"></span>
-        <span>ねこマグ（電源＋Wi-Fi）</span>
+        <span>電源＋Wi-Fiあり</span>
       </span>
       <span class="inline-flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-full bg-[#FFF5E4] border border-[#DFC3A8] inline-block"></span>
-        <span>一部対応・肉球ピン</span>
+        <span>一部のみ</span>
       </span>
       <span class="text-[#9A8475] font-normal">ズームで店名表示</span>
     </div>
@@ -412,15 +400,10 @@ app.get('/', (c) => {
       aria-labelledby="bs-title"
       class="absolute left-3 right-3 bottom-3 z-[800] max-w-3xl mx-auto bg-white border border-[#E8DDD0] rounded-[28px] shadow-[0_-8px_36px_rgba(92,62,40,0.18)] translate-y-[120%] transition-transform duration-300 ease-out max-h-[82%] flex flex-col overflow-hidden"
     >
-      <!-- Drag Handle with Subtle Peeking Cat -->
+      <!-- Drag Handle -->
       <div id="bs-handle" class="pt-2.5 pb-2 px-5 cursor-grab active:cursor-grabbing flex items-center justify-between border-b border-[#F2E8DC] bg-[#FFFDF9] shrink-0 touch-none">
         <span id="bs-area-badge" class="px-2.5 py-0.5 rounded-full bg-milktea text-latte text-[11px] font-bold">大阪・北浜</span>
-        <div class="flex items-center gap-1.5 text-[#D8B99E]">
-          <svg viewBox="0 0 24 12" class="w-5 h-2.5 text-cafeorange/75" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 10 L5.5 3 L9.5 7.5 Q12 6.8 14.5 7.5 L18.5 3 L21 10"/>
-          </svg>
-          <div class="w-9 h-1.5 rounded-full bg-[#E6D8C9]"></div>
-        </div>
+        <div class="w-11 h-1.5 rounded-full bg-[#E6D8C9]"></div>
         <div class="flex items-center gap-1.5">
           <button id="bs-size-btn" type="button" class="soft-press px-3 py-1 rounded-full bg-milktea hover:bg-butter-light text-[11px] font-bold text-espresso">大きく見る</button>
           <button id="bs-close-btn" type="button" class="soft-press w-7 h-7 rounded-full bg-milktea hover:bg-cafeorange hover:text-white flex items-center justify-center text-latte transition-colors" aria-label="とじる">

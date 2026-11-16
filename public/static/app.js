@@ -70,17 +70,13 @@
     `;
   }
 
-  // Rounded Line Icons & Cat-Themed Map Pin Glyphs (Zero Default Emojis)
+  // Rounded Line Icons & Clean Map Pin Glyphs (Zero Default Emojis)
   const SVG = {
-    mugIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 7h9.2v4.8a4.6 4.6 0 0 1-9.2 0V7z" fill="currentColor" fill-opacity="0.2"/><path d="M13.4 8.2h1.5a2 2 0 0 1 0 4h-1.5"/><circle cx="7.4" cy="10.2" r="0.85" fill="currentColor" stroke="none"/><circle cx="10.2" cy="10.2" r="0.85" fill="currentColor" stroke="none"/></svg>`,
-    beanIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="currentColor"><ellipse cx="10" cy="12" rx="3.8" ry="3"/><circle cx="5.8" cy="7.5" r="1.5"/><circle cx="8.6" cy="5.8" r="1.55"/><circle cx="11.6" cy="5.8" r="1.55"/><circle cx="14.2" cy="7.5" r="1.5"/></svg>`,
-    clusterEars: `<svg viewBox="0 0 36 12" class="noma-cluster-ears" fill="none"><polygon points="4,11 7.5,2 14,9" fill="#FFFDF9" stroke="#E67645" stroke-width="2" stroke-linejoin="round"/><polygon points="32,11 28.5,2 22,9" fill="#FFFDF9" stroke="#E67645" stroke-width="2" stroke-linejoin="round"/></svg>`,
-    pinEarsFull: `<svg viewBox="0 0 28 11" class="mug-pin-ears" fill="none"><polygon points="3,10 5.8,1.5 11.5,8" fill="#E67645" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><polygon points="25,10 22.2,1.5 16.5,8" fill="#E67645" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
-    pinEarsPartial: `<svg viewBox="0 0 28 11" class="mug-pin-ears" fill="none"><polygon points="3,10 5.8,1.5 11.5,8" fill="#FFF5E4" stroke="#DFC3A8" stroke-width="1.5" stroke-linejoin="round"/><polygon points="25,10 22.2,1.5 16.5,8" fill="#FFF5E4" stroke="#DFC3A8" stroke-width="1.5" stroke-linejoin="round"/></svg>`,
-    clusterSteam: `<svg viewBox="0 0 20 10" class="w-3.5 h-2 text-[#E67645]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5.5 7.8a5.5 5.5 0 0 1 9 0"/><circle cx="10" cy="8.8" r="1" fill="currentColor" stroke="none"/></svg>`,
-    floatHeart: `<svg viewBox="0 0 22 22" class="w-full h-full"><path d="M11 19s-7-4.3-7-9A4 4 0 0 1 11 7.3 4 4 0 0 1 18 10c0 4.7-7 9-7 9z" fill="#F48FB1" stroke="#FFFFFF" stroke-width="1.3"/><ellipse cx="11" cy="13.2" rx="2.1" ry="1.6" fill="#FFFDF9"/><circle cx="8.7" cy="10.5" r="0.95" fill="#FFFDF9"/><circle cx="11" cy="9.7" r="1" fill="#FFFDF9"/><circle cx="13.3" cy="10.5" r="0.95" fill="#FFFDF9"/></svg>`,
-    pawStamp: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="currentColor"><ellipse cx="9" cy="11.5" rx="3.4" ry="2.6"/><circle cx="5.2" cy="7.4" r="1.4"/><circle cx="7.7" cy="5.8" r="1.45"/><circle cx="10.3" cy="5.8" r="1.45"/><circle cx="12.8" cy="7.4" r="1.4"/></svg>`,
-    imakokoCat: `<svg viewBox="0 0 28 28" class="imakoko-cat-core" fill="none"><polygon points="5,13 7,4.5 12.5,9" fill="#E67645" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/><polygon points="23,13 21,4.5 15.5,9" fill="#E67645" stroke="#FFFFFF" stroke-width="2" stroke-linejoin="round"/><circle cx="14" cy="15.5" r="8.5" fill="#E67645" stroke="#FFFFFF" stroke-width="2.2"/><circle cx="11.3" cy="15.2" r="1.15" fill="#FFFDF9"/><circle cx="16.7" cy="15.2" r="1.15" fill="#FFFDF9"/><path d="M12.6 17.4 Q14 18.6 15.4 17.4" stroke="#FFFDF9" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+    mugIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h9.5v5.2a4.7 4.7 0 0 1-9.5 0V6.5z" fill="currentColor" fill-opacity="0.18"/><path d="M13.5 7.8h1.6a2.1 2.1 0 0 1 0 4.2h-1.6"/></svg>`,
+    beanIcon: `<svg viewBox="0 0 20 20" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><ellipse cx="10" cy="10" rx="4.8" ry="6.6" transform="rotate(-25 10 10)"/><path d="M8 4.8c1.6 2.6.9 6.6 4 9.8"/></svg>`,
+    clusterSteam: `<svg viewBox="0 0 20 10" class="w-3.5 h-2 text-[#E67645]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 8.5c-.6-2 1.2-3 .6-5M11 8.5c-.6-2 1.2-3 .6-5M15.5 8.5c-.5-1.6 1-2.5.5-4"/></svg>`,
+    floatHeart: `<svg viewBox="0 0 20 20" class="w-full h-full"><path d="M10 17.2s-6.5-4.1-6.5-8.6A3.7 3.7 0 0 1 10 6.2a3.7 3.7 0 0 1 6.5 2.4c0 4.5-6.5 8.6-6.5 8.6z" fill="#F48FB1" stroke="#FFFFFF" stroke-width="1.4"/></svg>`,
+    pawStep: `<svg viewBox="0 0 18 18" class="w-full h-full" fill="currentColor"><ellipse cx="9" cy="11.6" rx="3.4" ry="2.6"/><circle cx="5.2" cy="7.4" r="1.4"/><circle cx="7.7" cy="5.8" r="1.45"/><circle cx="10.3" cy="5.8" r="1.45"/><circle cx="12.8" cy="7.4" r="1.4"/></svg>`,
     plug: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.5v3.2M11.5 2.5v3.2M4.5 5.7h9v2.8a4.5 4.5 0 0 1-9 0V5.7zM9 13v2.8"/></svg>`,
     wifi: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.4 7a10.2 10.2 0 0 1 13.2 0M5.2 10a6.3 6.3 0 0 1 7.6 0M8.8 13h.4"/></svg>`,
     minus: `<svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6.3"/><line x1="6.2" y1="9" x2="11.8" y2="9"/></svg>`,
@@ -261,13 +257,19 @@
         setTimeout(() => setHeaderMascot('normal'), 2200);
       }
     });
+  }
 
-    // Interactive Loaf-Cat on Map Legend ("看板ねこ")
-    document.getElementById('legend-cat-btn')?.addEventListener('click', () => {
-      setHeaderMascot('happy');
-      setTimeout(() => setHeaderMascot('normal'), 2400);
-      showToast('ゴロゴロ…看板ねこも電源席を見守り中だよ');
-    });
+  // Serendipitous Cat Paw-Print Helpers ("ふとしたときの足跡")
+  function triggerInlinePawSteps() {
+    const slot = document.getElementById('paw-trail-slot');
+    if (!slot) return;
+    slot.innerHTML = `<span class="paw-trail-inline" aria-hidden="true"><span class="paw-step-dot">${SVG.pawStep}</span><span class="paw-step-dot">${SVG.pawStep}</span><span class="paw-step-dot">${SVG.pawStep}</span><span class="paw-step-dot">${SVG.pawStep}</span></span>`;
+  }
+
+  function triggerMapPawWhisper() {
+    const el = document.getElementById('map-paw-whisper');
+    if (!el) return;
+    el.innerHTML = `<span class="whisper-paw">${SVG.pawStep}</span><span class="whisper-paw">${SVG.pawStep}</span><span class="whisper-paw">${SVG.pawStep}</span><span class="whisper-paw">${SVG.pawStep}</span>`;
   }
 
   function showToast(message, undoLabel = '', onUndo = null) {
@@ -332,11 +334,10 @@
       iconCreateFunction: function (cluster) {
         const count = cluster.getChildCount();
         const sizeClass = count >= 20 ? 'cluster-lg' : '';
-        const px = count >= 20 ? 52 : 46;
+        const px = count >= 20 ? 50 : 44;
         return L.divIcon({
           html: `
             <div class="noma-cluster-badge ${sizeClass}" title="${count}軒のカフェが集まっています（タップで展開）">
-              ${SVG.clusterEars}
               ${SVG.clusterSteam}
               <span class="noma-cluster-count">${count}</span>
             </div>
@@ -383,9 +384,9 @@
     if (originMarker) map.removeLayer(originMarker);
     const icon = L.divIcon({
       className: 'imakoko-pin',
-      html: `<div class="imakoko-dot" title="いまここ（基準位置）"><div class="imakoko-ring"></div>${SVG.imakokoCat}</div>`,
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
+      html: `<div class="imakoko-dot" title="いまここ（基準位置）"><div class="imakoko-ring"></div><div class="imakoko-core"></div></div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
     });
     originMarker = L.marker([state.lat, state.lng], { icon, zIndexOffset: 950 }).addTo(map);
   }
@@ -404,7 +405,6 @@
       <div class="mug-pin-wrap ${stateClasses}" data-pin-wrap="${spot.id}">
         <div class="mug-pin-label">${spot.name}</div>
         ${withHeart ? `<span class="pin-float-heart">${SVG.floatHeart}</span>` : ''}
-        ${isFull ? SVG.pinEarsFull : SVG.pinEarsPartial}
         <div class="mug-pin-badge">
           ${isBean ? SVG.beanIcon : SVG.mugIcon}
         </div>
@@ -424,8 +424,8 @@
       const icon = L.divIcon({
         className: 'noma-mug-marker',
         html: buildPinHTML(spot, isSelected, isHovered, false),
-        iconSize: [38, 40],
-        iconAnchor: [19, 34]
+        iconSize: [36, 36],
+        iconAnchor: [18, 30]
       });
 
       const marker = L.marker([spot.lat, spot.lng], {
@@ -452,8 +452,8 @@
       L.divIcon({
         className: 'noma-mug-marker',
         html: buildPinHTML(entry.spot, isSelected, isHovered, withHeart),
-        iconSize: [38, 40],
-        iconAnchor: [19, 34]
+        iconSize: [36, 36],
+        iconAnchor: [18, 30]
       })
     );
     entry.marker.setZIndexOffset(isSelected ? 1000 : isHovered ? 850 : 100);
@@ -572,11 +572,12 @@
     updateAreaTabCounts();
     const filtered = getFilteredSpots();
 
-    // Friendly Count Text
+    // Friendly Count Text + Subtle Walking Paw Steps
     if (dom.friendlyCountText) {
       dom.friendlyCountText.textContent =
         filtered.length > 0 ? `${filtered.length}軒のカフェが見つかったよ` : '0軒（条件をゆるめてみてね）';
     }
+    triggerInlinePawSteps();
 
     renderCardList(filtered);
     renderClusteredPins(filtered);
@@ -589,13 +590,17 @@
     if (list.length === 0) {
       setHeaderMascot('sad');
       dom.cardsList.innerHTML = `
-        <div class="rounded-[24px] bg-white border border-[#E8DDD0] p-7 text-center space-y-3 shadow-sm">
+        <div class="relative overflow-hidden rounded-[24px] bg-white border border-[#E8DDD0] p-7 text-center space-y-3 shadow-sm">
           <div class="w-16 h-16 mx-auto">${getMascotSVG('sad')}</div>
           <p class="text-sm font-black text-espresso">見つからなかったよ…</p>
           <p class="text-xs text-latte leading-relaxed">別のエリアを選ぶか、絞りこみ条件をいちど解除してみてね。</p>
           <button id="empty-reset-btn" type="button" class="soft-press px-4 py-2 rounded-full bg-cafeorange text-white text-xs font-bold shadow-sm">
             すべてのカフェを表示する
           </button>
+          <div class="absolute bottom-2.5 right-3.5 flex items-center gap-1.5 text-[#D8B99E] opacity-35 pointer-events-none" aria-hidden="true">
+            <span class="w-3 h-3 inline-block -rotate-12">${SVG.pawStep}</span>
+            <span class="w-3 h-3 inline-block rotate-12 -translate-y-1">${SVG.pawStep}</span>
+          </div>
         </div>
       `;
       document.getElementById('empty-reset-btn')?.addEventListener('click', resetAllFilters);
@@ -664,15 +669,15 @@
                 <button
                   type="button"
                   data-bm-id="${spot.id}"
-                  class="soft-press px-2.5 py-1 rounded-full border ${
+                  class="relative soft-press px-2.5 py-1 rounded-full border ${
                     isSaved
                       ? 'bg-sakura-light border-[#F4B8C8] text-sakura-ink'
                       : 'bg-white border-[#E8DDD0] text-latte hover:border-[#D5BFA9]'
                   } text-xs font-bold inline-flex items-center gap-1"
                   aria-label="ブックマーク"
                 >
-                  ${isSaved ? SVG.pawStamp : SVG.bookmark}
-                  <span>${isSaved ? 'お気に入りニャ' : 'ブックマーク'}</span>
+                  ${isSaved ? SVG.bookmarkFill : SVG.bookmark}
+                  <span>ブックマーク</span>
                 </button>
 
                 <button
@@ -688,7 +693,19 @@
         </article>
       `;
       })
-      .join('');
+      .join('') +
+      `
+      <!-- Serendipitous End-of-List Quiet Cat Paw Trail -->
+      <div class="pt-5 pb-7 flex flex-col items-center justify-center gap-1.5 text-[11px] text-[#B59E8C] select-none">
+        <div class="flex items-center gap-2 text-[#D5B69E]" aria-hidden="true">
+          <span class="w-3 h-3 inline-block -rotate-12 translate-y-0.5 opacity-45">${SVG.pawStep}</span>
+          <span class="w-3 h-3 inline-block rotate-12 -translate-y-0.5 opacity-65">${SVG.pawStep}</span>
+          <span class="w-3 h-3 inline-block -rotate-12 translate-y-0.5 opacity-80">${SVG.pawStep}</span>
+          <span class="w-3 h-3 inline-block rotate-12 -translate-y-0.5">${SVG.pawStep}</span>
+        </div>
+        <span>とことこ… ここまで見てくれてありがとう</span>
+      </div>
+      `;
 
     bindCardEvents();
   }
@@ -706,6 +723,13 @@
         e.stopPropagation();
         const id = btn.getAttribute('data-bm-id');
         btn.classList.add('bookmark-pop');
+        if (id && !state.savedIds.has(id)) {
+          const burst = document.createElement('span');
+          burst.className = 'bm-paw-burst';
+          burst.innerHTML = SVG.pawStep;
+          btn.appendChild(burst);
+          setTimeout(() => burst.remove(), 750);
+        }
         if (id) toggleBookmark(id);
       });
     });
@@ -956,8 +980,14 @@
           </div>
         </div>
 
-        <div class="md:col-span-3 rounded-[20px] bg-milktea/70 border border-[#ECE0D1] p-3.5 flex flex-col justify-between">
-          <div class="text-[11px] font-bold text-latte">ゆとり時間帯の目安</div>
+        <div class="md:col-span-3 relative overflow-hidden rounded-[20px] bg-milktea/70 border border-[#ECE0D1] p-3.5 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div class="text-[11px] font-bold text-latte">ゆとり時間帯の目安</div>
+            <span class="inline-flex items-center gap-0.5 text-[#D2B298] opacity-40" aria-hidden="true">
+              <span class="w-2.5 h-2.5 inline-block -rotate-12">${SVG.pawStep}</span>
+              <span class="w-2.5 h-2.5 inline-block rotate-12 -translate-y-0.5">${SVG.pawStep}</span>
+            </span>
+          </div>
           <div class="h-20 flex items-end justify-between gap-1 pt-2">
             ${hourly
               .map(
@@ -1263,6 +1293,7 @@
       state.programmaticMove = true;
       map.flyTo([preset.lat, preset.lng], preset.zoom, { duration: 0.6 });
     }
+    triggerMapPawWhisper();
     updateAllViews();
   }
 
@@ -1281,6 +1312,7 @@
         state.programmaticMove = true;
         map.flyTo([lat, lng], 15, { duration: 0.65 });
       }
+      triggerMapPawWhisper();
       updateAllViews();
       showToast(msg);
     };
