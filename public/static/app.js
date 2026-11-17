@@ -100,6 +100,8 @@
     powerOnly: false,
     wifiOnly: false,
     coworkOnly: false,
+    hankyuOnly: false,
+    indieOnly: false,
     savedOnly: false,
     query: '',
     sort: 'distance',
@@ -147,10 +149,14 @@
     clearQBtn: document.getElementById('clear-q-btn'),
     acPanel: document.getElementById('ac-panel'),
     acList: document.getElementById('ac-list'),
+    filterHankyuBtn: document.getElementById('filter-hankyu-btn'),
+    filterIndieBtn: document.getElementById('filter-indie-btn'),
     filterPowerBtn: document.getElementById('filter-power-btn'),
     filterWifiBtn: document.getElementById('filter-wifi-btn'),
     filterCoworkBtn: document.getElementById('filter-cowork-btn'),
     filterSavedBtn: document.getElementById('filter-saved-btn'),
+    countHankyu: document.getElementById('count-hankyu'),
+    countIndie: document.getElementById('count-indie'),
     countPower: document.getElementById('count-power'),
     countWifi: document.getElementById('count-wifi'),
     countCowork: document.getElementById('count-cowork'),
@@ -492,6 +498,12 @@
     const base = getBaseRegionSpots();
 
     // Update Live Filter Pill Counts based on current area/search context
+    if (dom.countHankyu) {
+      dom.countHankyu.textContent = String(base.filter((s) => s.isHankyu).length);
+    }
+    if (dom.countIndie) {
+      dom.countIndie.textContent = String(base.filter((s) => s.isIndie).length);
+    }
     if (dom.countPower) {
       dom.countPower.textContent = String(base.filter((s) => s.power === 'yes_all' || s.power === 'yes_part').length);
     }
@@ -510,6 +522,12 @@
       list = state.spots
         .map((s) => ({ ...s, distanceMeters: calcMeters(state.lat, state.lng, s.lat, s.lng) }))
         .filter((s) => state.savedIds.has(s.id));
+    }
+    if (state.hankyuOnly) {
+      list = list.filter((s) => s.isHankyu);
+    }
+    if (state.indieOnly) {
+      list = list.filter((s) => s.isIndie);
     }
     if (state.powerOnly) {
       list = list.filter((s) => s.power === 'yes_all' || s.power === 'yes_part');
@@ -634,8 +652,15 @@
                 <span class="px-2.5 py-0.5 rounded-full ${
                   spot.category === 'coworking'
                     ? 'bg-mint-light text-mint-ink'
+                    : spot.isIndie
+                    ? 'bg-[#FFF0E6] text-[#B84C22]'
                     : 'bg-butter-light text-butter-ink'
                 } font-bold shrink-0">${spot.categoryLabel}</span>
+                ${
+                  spot.isHankyu
+                    ? '<span class="px-2 py-0.5 rounded-full bg-[#F6E8EC] text-[#7A2842] text-[10.5px] font-bold shrink-0">阪急沿線</span>'
+                    : ''
+                }
                 <span class="text-latte font-medium truncate">${spot.areaLabel}</span>
               </div>
               <span class="font-mono text-xs font-bold text-latte shrink-0">${formatDist(spot.distanceMeters)}</span>
@@ -1343,13 +1368,22 @@
     state.powerOnly = false;
     state.wifiOnly = false;
     state.coworkOnly = false;
+    state.hankyuOnly = false;
+    state.indieOnly = false;
     state.savedOnly = false;
     state.query = '';
     if (dom.searchInput) dom.searchInput.value = '';
     dom.clearQBtn?.classList.add('hidden');
     dom.searchBoundsBtn?.classList.add('hidden');
 
-    [dom.filterPowerBtn, dom.filterWifiBtn, dom.filterCoworkBtn, dom.filterSavedBtn].forEach((b) => {
+    [
+      dom.filterHankyuBtn,
+      dom.filterIndieBtn,
+      dom.filterPowerBtn,
+      dom.filterWifiBtn,
+      dom.filterCoworkBtn,
+      dom.filterSavedBtn
+    ].forEach((b) => {
       b?.classList.remove('is-selected');
       b?.setAttribute('aria-pressed', 'false');
     });
@@ -1381,6 +1415,8 @@
       });
     };
 
+    bindToggle(dom.filterHankyuBtn, 'hankyuOnly');
+    bindToggle(dom.filterIndieBtn, 'indieOnly');
     bindToggle(dom.filterPowerBtn, 'powerOnly');
     bindToggle(dom.filterWifiBtn, 'wifiOnly');
     bindToggle(dom.filterCoworkBtn, 'coworkOnly');

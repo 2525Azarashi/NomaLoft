@@ -17,12 +17,22 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
 }
 
+const MAJOR_CHAINS_RE =
+  /スターバックス|タリーズ|ドトール|エクセルシオール|サンマルク|コメダ珈琲|上島珈琲|ベローチェ|カフェ・ド・クリエ|プロント|ホリーズカフェ|星乃珈琲|シアトルズベスト|BIZcomfort|TSUTAYA|蔦屋書店|枚方T-SITE|セルフカフェ|ワークスタイリング|WeWork|SYNTH|billage/i
+
 function enrichSpot(s: KansaiSpot, lat: number, lng: number) {
   const distanceMeters = haversineMeters(lat, lng, s.lat, s.lng)
   const walkFromHere = Math.max(1, Math.round(distanceMeters / 80))
   const powerScore = s.power === 'yes_all' ? 100 : s.power === 'yes_part' ? 78 : 20
   const wifiScore = s.wifi === 'yes_free' ? 95 : s.wifi === 'yes_reg' ? 75 : 15
   const workIndex = Math.round(powerScore * 0.3 + wifiScore * 0.3 + s.deskScore * 0.22 + s.quietScore * 0.18)
+  const isHankyu = Boolean(
+    s.hankyu ||
+      /阪急|梅田|中崎町|中津|十三|南方|上新庄|茨木市|高槻市|長岡天神|桂|西院|大宮|烏丸|河原町|豊中|蛍池|石橋阪大前|箕面|桜井|牧落|関大前|北千里|岡本|御影|六甲|王子公園|夙川|苦楽園|芦屋川|西宮北口|武庫之荘|塚口|門戸厄神|宝塚|逆瀬川|川西能勢口|花隈/.test(
+        `${s.station} ${s.areaLabel}`
+      )
+  )
+  const isIndie = s.indie !== undefined ? s.indie : s.category === 'roastery' || !MAJOR_CHAINS_RE.test(s.name)
 
   return {
     ...s,
@@ -30,7 +40,9 @@ function enrichSpot(s: KansaiSpot, lat: number, lng: number) {
     walkFromHere,
     powerScore,
     wifiScore,
-    workIndex
+    workIndex,
+    isHankyu,
+    isIndie
   }
 }
 
@@ -43,12 +55,15 @@ app.get('/api/spots', (c) => {
   return c.json({
     spots: list,
     regions: KANSAI_REGIONS,
-    stats: {
-      total: list.length,
-      withPower: list.filter((s) => s.power === 'yes_all' || s.power === 'yes_part').length,
-      withWifi: list.filter((s) => s.wifi === 'yes_free' || s.wifi === 'yes_reg').length,
-      coworking: list.filter((s) => s.category === 'coworking').length
-    }
+      stats: {
+        total: list.length,
+        withPower: list.filter((s) => s.power === 'yes_all' || s.power === 'yes_part').length,
+        withWifi: list.filter((s) => s.wifi === 'yes_free' || s.wifi === 'yes_reg').length,
+        coworking: list.filter((s) => s.category === 'coworking').length,
+        hankyu: list.filter((s) => s.isHankyu).length,
+        indie: list.filter((s) => s.isIndie).length,
+        hankyuIndie: list.filter((s) => s.isHankyu && s.isIndie).length
+      }
   })
 })
 
@@ -232,7 +247,19 @@ app.get('/', (c) => {
       </div>
 
       <!-- 3. Filter Pills with Counts (Selected = Solid Orange + White Text, Unselected = White + Thin Border) -->
-      <div class="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5" aria-label="設備フィルタ">
+      <div class="mt-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5" aria-label="設備・沿線フィルタ">
+        <button id="filter-hankyu-btn" type="button" aria-pressed="false" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1.5" title="阪急神戸線・宝塚線・京都線・支線のカフェに絞り込み">
+          <svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="2.5" width="11" height="11" rx="2.5"/><line x1="3.5" y1="8.2" x2="14.5" y2="8.2"/><circle cx="6.5" cy="11" r="0.8" fill="currentColor"/><circle cx="11.5" cy="11" r="0.8" fill="currentColor"/><path d="M6 13.5l-1.5 2.2M12 13.5l1.5 2.2"/></svg>
+          <span>阪急沿線</span>
+          <span id="count-hankyu" class="count-chip">110</span>
+        </button>
+
+        <button id="filter-indie-btn" type="button" aria-pressed="false" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1.5" title="個人カフェ・自家焙煎ロースタリー・ローカル店のみ表示">
+          <svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h8.5v4.2a4.25 4.25 0 0 1-8.5 0V7.5z"/><path d="M12.5 8.5h1.3a1.8 1.8 0 0 1 0 3.6h-1.3"/><path d="M6.8 4.8c-.4-1.2.8-1.8.4-3M9.8 5c-.4-1.2.8-1.8.4-3"/></svg>
+          <span>個人店・焙煎所</span>
+          <span id="count-indie" class="count-chip">120</span>
+        </button>
+
         <button id="filter-power-btn" type="button" aria-pressed="false" class="soft-press tab-pill px-3 py-1.5 text-xs font-bold inline-flex items-center gap-1.5">
           <svg viewBox="0 0 18 18" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.5v3.2M11.5 2.5v3.2M4.5 5.7h9v2.8a4.5 4.5 0 0 1-9 0V5.7zM9 13v2.8"/></svg>
           <span>コンセントあり</span>
