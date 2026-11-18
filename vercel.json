@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "public",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index?__noma_path=/api/$1"
+    },
+    {
+      "source": "/((?!static/|api).*)",
+      "destination": "/api/index?__noma_path=/$1"
+    }
+  ]
+}
