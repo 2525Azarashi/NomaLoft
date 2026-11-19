@@ -5,9 +5,9 @@
 ---
 
 ## 公開URL ＆ リポジトリ
+- **Vercel Production（本番公開URL）**: `https://nomaloft.vercel.app`
+- **Official Custom Logo Lab（本番 `/logos`）**: `https://nomaloft.vercel.app/logos`
 - **GitHub Repository**: `https://github.com/2525Azarashi/NomaLoft`
-- **Sandbox Live Preview（マップ本体・240店舗＆阪急沿線・個人カフェフィルタ収録）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai`
-- **Official Custom Logo Lab（決定版カスタム A/B/C ＋ 全案比較シート）**: `https://3000-i9hg2lex5g5ii3268vejl-3c7ff1b5.sandbox.novita.ai/logos`
 
 ---
 
